@@ -144,27 +144,32 @@ export default function AppointmentsPage() {
   const [dateFilter, setDateFilter] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<any>(null);
-  const [selectedAppointment, setSelectedAppointment] = useState<string | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<string | null>(
+    null
+  );
 
   const filteredAppointments = appointmentsList.filter((apt) => {
     const matchesSearch =
       apt.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
       apt.phone.includes(searchTerm) ||
       apt.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || apt.status === statusFilter;
+    const matchesStatus = statusFilter === "all" || apt.status === statusFilter;
     const matchesDate =
       dateFilter === "all" ||
-      (dateFilter === "today" && apt.date === new Date().toISOString().split('T')[0]) ||
-      (dateFilter === "tomorrow" && apt.date === new Date(Date.now() + 86400000).toISOString().split('T')[0]) ||
-      (dateFilter === "week" && {
-        const weekStart = new Date();
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate() + 6);
-        const aptDate = new Date(apt.date);
-        return aptDate >= weekStart && aptDate <= weekEnd;
-      });
+      (dateFilter === "today" &&
+        apt.date === new Date().toISOString().split("T")[0]) ||
+      (dateFilter === "tomorrow" &&
+        apt.date ===
+          new Date(Date.now() + 86400000).toISOString().split("T")[0]) ||
+      (dateFilter === "week" &&
+        (() => {
+          const weekStart = new Date();
+          weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekEnd.getDate() + 6);
+          const aptDate = new Date(apt.date);
+          return aptDate >= weekStart && aptDate <= weekEnd;
+        })());
     return matchesSearch && matchesStatus && matchesDate;
   });
 
@@ -224,7 +229,10 @@ export default function AppointmentsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Đã hoàn tất</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {appointmentsList.filter((apt) => apt.status === "completed").length}
+                {
+                  appointmentsList.filter((apt) => apt.status === "completed")
+                    .length
+                }
               </p>
             </div>
           </div>
@@ -237,7 +245,10 @@ export default function AppointmentsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Đang xử lý</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {appointmentsList.filter((apt) => apt.status === "in-progress").length}
+                {
+                  appointmentsList.filter((apt) => apt.status === "in-progress")
+                    .length
+                }
               </p>
             </div>
           </div>
@@ -250,7 +261,10 @@ export default function AppointmentsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Chờ xác nhận</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {appointmentsList.filter((apt) => apt.status === "pending").length}
+                {
+                  appointmentsList.filter((apt) => apt.status === "pending")
+                    .length
+                }
               </p>
             </div>
           </div>
@@ -351,14 +365,18 @@ export default function AppointmentsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{appointment.date}</div>
+                    <div className="text-sm text-gray-900">
+                      {appointment.date}
+                    </div>
                     <div className="text-sm text-gray-500 flex items-center">
                       <Clock className="h-3 w-3 mr-1" />
                       {appointment.time}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{appointment.type}</div>
+                    <div className="text-sm text-gray-900">
+                      {appointment.type}
+                    </div>
                     {appointment.notes && (
                       <div className="text-sm text-gray-500 truncate max-w-xs">
                         {appointment.notes}
@@ -375,7 +393,9 @@ export default function AppointmentsPage() {
                       )}`}
                     >
                       {getStatusIcon(appointment.status)}
-                      <span className="ml-1">{getStatusText(appointment.status)}</span>
+                      <span className="ml-1">
+                        {getStatusText(appointment.status)}
+                      </span>
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -416,8 +436,10 @@ export default function AppointmentsPage() {
       <div className="flex items-center justify-between bg-white px-6 py-3 border-t border-gray-200">
         <div className="flex items-center text-sm text-gray-700">
           Hiển thị <span className="font-medium">1</span> đến{" "}
-          <span className="font-medium">{filteredAppointments.length}</span> trong{" "}
-          <span className="font-medium">{filteredAppointments.length}</span> kết quả
+          <span className="font-medium">{filteredAppointments.length}</span>{" "}
+          trong{" "}
+          <span className="font-medium">{filteredAppointments.length}</span> kết
+          quả
         </div>
         <div className="flex items-center space-x-2">
           <button className="px-3 py-1 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
@@ -450,7 +472,11 @@ export default function AppointmentsPage() {
                           Khách hàng
                         </label>
                         <p className="mt-1 text-sm text-gray-900">
-                          {appointmentsList.find((apt) => apt.id === selectedAppointment)?.customer}
+                          {
+                            appointmentsList.find(
+                              (apt) => apt.id === selectedAppointment
+                            )?.customer
+                          }
                         </p>
                       </div>
                       <div>
@@ -458,7 +484,11 @@ export default function AppointmentsPage() {
                           Số điện thoại
                         </label>
                         <p className="mt-1 text-sm text-gray-900">
-                          {appointmentsList.find((apt) => apt.id === selectedAppointment)?.phone}
+                          {
+                            appointmentsList.find(
+                              (apt) => apt.id === selectedAppointment
+                            )?.phone
+                          }
                         </p>
                       </div>
                       <div>
@@ -466,7 +496,11 @@ export default function AppointmentsPage() {
                           Email
                         </label>
                         <p className="mt-1 text-sm text-gray-900">
-                          {appointmentsList.find((apt) => apt.id === selectedAppointment)?.email}
+                          {
+                            appointmentsList.find(
+                              (apt) => apt.id === selectedAppointment
+                            )?.email
+                          }
                         </p>
                       </div>
                       <div>
@@ -474,7 +508,17 @@ export default function AppointmentsPage() {
                           Thời gian
                         </label>
                         <p className="mt-1 text-sm text-gray-900">
-                          {appointmentsList.find((apt) => apt.id === selectedAppointment)?.date} - {appointmentsList.find((apt) => apt.id === selectedAppointment)?.time}
+                          {
+                            appointmentsList.find(
+                              (apt) => apt.id === selectedAppointment
+                            )?.date
+                          }{" "}
+                          -{" "}
+                          {
+                            appointmentsList.find(
+                              (apt) => apt.id === selectedAppointment
+                            )?.time
+                          }
                         </p>
                       </div>
                       <div>
@@ -482,7 +526,11 @@ export default function AppointmentsPage() {
                           Loại dịch vụ
                         </label>
                         <p className="mt-1 text-sm text-gray-900">
-                          {appointmentsList.find((apt) => apt.id === selectedAppointment)?.type}
+                          {
+                            appointmentsList.find(
+                              (apt) => apt.id === selectedAppointment
+                            )?.type
+                          }
                         </p>
                       </div>
                       <div>
@@ -490,7 +538,11 @@ export default function AppointmentsPage() {
                           KTV phụ trách
                         </label>
                         <p className="mt-1 text-sm text-gray-900">
-                          {appointmentsList.find((apt) => apt.id === selectedAppointment)?.staff}
+                          {
+                            appointmentsList.find(
+                              (apt) => apt.id === selectedAppointment
+                            )?.staff
+                          }
                         </p>
                       </div>
                       <div>
@@ -498,7 +550,11 @@ export default function AppointmentsPage() {
                           Ghi chú
                         </label>
                         <p className="mt-1 text-sm text-gray-900">
-                          {appointmentsList.find((apt) => apt.id === selectedAppointment)?.notes}
+                          {
+                            appointmentsList.find(
+                              (apt) => apt.id === selectedAppointment
+                            )?.notes
+                          }
                         </p>
                       </div>
                     </div>
@@ -529,7 +585,9 @@ export default function AppointmentsPage() {
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                      {editingAppointment ? "Chỉnh sửa lịch hẹn" : "Thêm lịch hẹn mới"}
+                      {editingAppointment
+                        ? "Chỉnh sửa lịch hẹn"
+                        : "Thêm lịch hẹn mới"}
                     </h3>
                     <form className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -603,10 +661,16 @@ export default function AppointmentsPage() {
                             KTV phụ trách
                           </label>
                           <select className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="KTV Nguyễn Thị B">KTV Nguyễn Thị B</option>
+                            <option value="KTV Nguyễn Thị B">
+                              KTV Nguyễn Thị B
+                            </option>
                             <option value="KTV Lê Văn C">KTV Lê Văn C</option>
-                            <option value="KTV Phạm Thị D">KTV Phạm Thị D</option>
-                            <option value="KTV Hoàng Văn E">KTV Hoàng Văn E</option>
+                            <option value="KTV Phạm Thị D">
+                              KTV Phạm Thị D
+                            </option>
+                            <option value="KTV Hoàng Văn E">
+                              KTV Hoàng Văn E
+                            </option>
                           </select>
                         </div>
                       </div>
