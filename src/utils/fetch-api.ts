@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-// Cấu hình base URL cho API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// Cấu hình base URL cho API - Backend chạy trên port 8080 với context path /api/v1
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
 
 // Tạo instance axios với cấu hình mặc định
 const apiClient: AxiosInstance = axios.create({

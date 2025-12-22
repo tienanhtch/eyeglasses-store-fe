@@ -1,5 +1,6 @@
 export interface Product {
   id: string;
+  slug?: string;
   name: string;
   price: number;
   originalPrice?: number;
@@ -13,6 +14,7 @@ export interface Product {
   sizes?: string[];
   material?: string;
   features?: string[];
+  variantId?: string; // ID của variant đầu tiên để thêm vào giỏ
 }
 
 export interface ProductColor {
