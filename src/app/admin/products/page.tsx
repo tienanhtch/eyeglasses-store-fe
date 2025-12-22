@@ -18,7 +18,7 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -86,7 +86,8 @@ export default function AdminProductsPage() {
         // Create
         const payload: ProductCreatePayload = {
           ...formData,
-          categoryIds: formData.categoryIds.length > 0 ? formData.categoryIds : undefined,
+          categoryIds:
+            formData.categoryIds.length > 0 ? formData.categoryIds : undefined,
         };
         await createProduct(payload);
         alert("Tạo sản phẩm thành công!");
@@ -104,7 +105,7 @@ export default function AdminProductsPage() {
   // Handle delete
   const handleDelete = async (id: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
-    
+
     try {
       await deleteProduct(id);
       alert("Xóa sản phẩm thành công!");
@@ -148,16 +149,16 @@ export default function AdminProductsPage() {
       frameShape: product.frameShape || "",
       seoTitle: product.seoTitle || "",
       seoDescription: product.seoDescription || "",
-      categoryIds: product.categories?.map(c => c.id) || [],
+      categoryIds: product.categories?.map((c) => c.id) || [],
     });
     setShowModal(true);
   };
 
   const handleCategoryToggle = (categoryId: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       categoryIds: prev.categoryIds.includes(categoryId)
-        ? prev.categoryIds.filter(id => id !== categoryId)
+        ? prev.categoryIds.filter((id) => id !== categoryId)
         : [...prev.categoryIds, categoryId],
     }));
   };
@@ -223,8 +224,12 @@ export default function AdminProductsPage() {
                 <tr key={product.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                      <div className="text-sm text-gray-500">{product.slug}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {product.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {product.slug}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -339,7 +344,9 @@ export default function AdminProductsPage() {
                       type="text"
                       required
                       value={formData.slug}
-                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, slug: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                       placeholder="gong-kinh-titan"
                     />
@@ -354,7 +361,9 @@ export default function AdminProductsPage() {
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                     placeholder="Gọng kính Titan cao cấp"
                   />
@@ -367,7 +376,9 @@ export default function AdminProductsPage() {
                 </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                   placeholder="Mô tả chi tiết sản phẩm"
@@ -382,7 +393,9 @@ export default function AdminProductsPage() {
                   <input
                     type="text"
                     value={formData.brand}
-                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, brand: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                     placeholder="Ray-Ban"
                   />
@@ -395,7 +408,9 @@ export default function AdminProductsPage() {
                   <input
                     type="text"
                     value={formData.material}
-                    onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, material: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                     placeholder="Titanium"
                   />
@@ -408,7 +423,9 @@ export default function AdminProductsPage() {
                   <input
                     type="text"
                     value={formData.frameShape}
-                    onChange={(e) => setFormData({ ...formData, frameShape: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, frameShape: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                     placeholder="Oval"
                   />
@@ -431,7 +448,9 @@ export default function AdminProductsPage() {
                         onChange={() => handleCategoryToggle(category.id)}
                         className="rounded border-gray-300 text-gray-900 focus:ring-gray-500"
                       />
-                      <span className="text-sm text-gray-700">{category.name}</span>
+                      <span className="text-sm text-gray-700">
+                        {category.name}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -445,7 +464,9 @@ export default function AdminProductsPage() {
                   <input
                     type="text"
                     value={formData.seoTitle}
-                    onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, seoTitle: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                   />
                 </div>
@@ -457,7 +478,12 @@ export default function AdminProductsPage() {
                   <input
                     type="text"
                     value={formData.seoDescription}
-                    onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        seoDescription: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                   />
                 </div>

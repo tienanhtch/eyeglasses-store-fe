@@ -87,7 +87,7 @@ export default function AdminStoresPage() {
   // Handle delete
   const handleDelete = async (id: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa cửa hàng này?")) return;
-    
+
     try {
       await deleteStore(id);
       alert("Xóa cửa hàng thành công!");
@@ -173,7 +173,9 @@ export default function AdminStoresPage() {
             >
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">{store.name}</h3>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {store.name}
+                  </h3>
                   <p className="text-sm text-gray-500 mt-1">Mã: {store.code}</p>
                 </div>
                 <span
@@ -251,7 +253,9 @@ export default function AdminStoresPage() {
                       type="text"
                       required
                       value={formData.code}
-                      onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, code: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                       placeholder="ST001"
                     />
@@ -266,7 +270,9 @@ export default function AdminStoresPage() {
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                     placeholder="Cửa hàng Quận 1"
                   />
@@ -281,7 +287,9 @@ export default function AdminStoresPage() {
                   type="text"
                   required
                   value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                   placeholder="123 Đường ABC, Quận 1, TP.HCM"
                 />
@@ -296,7 +304,12 @@ export default function AdminStoresPage() {
                     type="number"
                     step="0.000001"
                     value={formData.lat || ""}
-                    onChange={(e) => setFormData({ ...formData, lat: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        lat: parseFloat(e.target.value) || 0,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                     placeholder="10.7769"
                   />
@@ -310,7 +323,12 @@ export default function AdminStoresPage() {
                     type="number"
                     step="0.000001"
                     value={formData.lng || ""}
-                    onChange={(e) => setFormData({ ...formData, lng: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        lng: parseFloat(e.target.value) || 0,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                     placeholder="106.7009"
                   />
@@ -326,7 +344,9 @@ export default function AdminStoresPage() {
                     type="tel"
                     required
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                     placeholder="0123456789"
                   />
@@ -340,7 +360,9 @@ export default function AdminStoresPage() {
                     type="text"
                     required
                     value={formData.openHours}
-                    onChange={(e) => setFormData({ ...formData, openHours: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, openHours: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                     placeholder="8:00-20:00"
                   />

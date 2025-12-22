@@ -17,7 +17,7 @@ export default function AdminOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("");
-  
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -30,7 +30,7 @@ export default function AdminOrdersPage() {
       setLoading(true);
       const params: any = { page, size: pageSize };
       if (status) params.status = status;
-      
+
       const data = await getOrders(params);
       setOrders(data.content);
       setCurrentPage(data.currentPage);
@@ -96,7 +96,9 @@ export default function AdminOrdersPage() {
       await shipOrder(orderId, {
         trackingNumber,
         shippingMethod: "EXPRESS",
-        estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        estimatedDelivery: new Date(
+          Date.now() + 3 * 24 * 60 * 60 * 1000
+        ).toISOString(),
       });
       alert("Đã giao hàng thành công!");
       loadOrders(currentPage, filterStatus || undefined);
@@ -108,16 +110,33 @@ export default function AdminOrdersPage() {
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; className: string }> = {
-      PENDING: { label: "Chờ xử lý", className: "bg-yellow-100 text-yellow-800" },
-      PROCESSING: { label: "Đang xử lý", className: "bg-blue-100 text-blue-800" },
-      SHIPPED: { label: "Đã giao hàng", className: "bg-purple-100 text-purple-800" },
-      DELIVERED: { label: "Hoàn thành", className: "bg-green-100 text-green-800" },
+      PENDING: {
+        label: "Chờ xử lý",
+        className: "bg-yellow-100 text-yellow-800",
+      },
+      PROCESSING: {
+        label: "Đang xử lý",
+        className: "bg-blue-100 text-blue-800",
+      },
+      SHIPPED: {
+        label: "Đã giao hàng",
+        className: "bg-purple-100 text-purple-800",
+      },
+      DELIVERED: {
+        label: "Hoàn thành",
+        className: "bg-green-100 text-green-800",
+      },
       CANCELLED: { label: "Đã hủy", className: "bg-red-100 text-red-800" },
     };
 
-    const config = statusMap[status] || { label: status, className: "bg-gray-100 text-gray-800" };
+    const config = statusMap[status] || {
+      label: status,
+      className: "bg-gray-100 text-gray-800",
+    };
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
+      <span
+        className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}
+      >
         {config.label}
       </span>
     );
@@ -152,7 +171,7 @@ export default function AdminOrdersPage() {
             Tổng số: {totalElements} đơn hàng
           </p>
         </div>
-        
+
         {/* Filter */}
         <div>
           <select
@@ -265,14 +284,18 @@ export default function AdminOrdersPage() {
             <div>
               <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                 <button
-                  onClick={() => loadOrders(currentPage - 1, filterStatus || undefined)}
+                  onClick={() =>
+                    loadOrders(currentPage - 1, filterStatus || undefined)
+                  }
                   disabled={currentPage === 0}
                   className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button
-                  onClick={() => loadOrders(currentPage + 1, filterStatus || undefined)}
+                  onClick={() =>
+                    loadOrders(currentPage + 1, filterStatus || undefined)
+                  }
                   disabled={currentPage >= totalPages - 1}
                   className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -308,16 +331,21 @@ export default function AdminOrdersPage() {
             {/* Order Info */}
             <div className="space-y-4">
               <div>
-                <h3 className="font-medium text-gray-900 mb-2">Thông tin khách hàng</h3>
+                <h3 className="font-medium text-gray-900 mb-2">
+                  Thông tin khách hàng
+                </h3>
                 <div className="bg-gray-50 p-4 rounded-md">
                   <p className="text-sm text-gray-700">
-                    <span className="font-medium">Tên:</span> {selectedOrder.customer?.name || "N/A"}
+                    <span className="font-medium">Tên:</span>{" "}
+                    {selectedOrder.customer?.name || "N/A"}
                   </p>
                   <p className="text-sm text-gray-700 mt-1">
-                    <span className="font-medium">Email:</span> {selectedOrder.customer?.email || "N/A"}
+                    <span className="font-medium">Email:</span>{" "}
+                    {selectedOrder.customer?.email || "N/A"}
                   </p>
                   <p className="text-sm text-gray-700 mt-1">
-                    <span className="font-medium">SĐT:</span> {selectedOrder.customer?.phone || "N/A"}
+                    <span className="font-medium">SĐT:</span>{" "}
+                    {selectedOrder.customer?.phone || "N/A"}
                   </p>
                 </div>
               </div>
@@ -326,7 +354,10 @@ export default function AdminOrdersPage() {
                 <h3 className="font-medium text-gray-900 mb-2">Sản phẩm</h3>
                 <div className="space-y-2">
                   {selectedOrder.items?.map((item) => (
-                    <div key={item.id} className="bg-gray-50 p-4 rounded-md flex justify-between">
+                    <div
+                      key={item.id}
+                      className="bg-gray-50 p-4 rounded-md flex justify-between"
+                    >
                       <div>
                         <p className="text-sm font-medium text-gray-900">
                           {item.variant.sku} - {item.variant.color}
@@ -353,30 +384,42 @@ export default function AdminOrdersPage() {
                 <div className="bg-gray-50 p-4 rounded-md space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-700">Tạm tính:</span>
-                    <span className="text-gray-900">{formatCurrency(selectedOrder.subtotal)}</span>
+                    <span className="text-gray-900">
+                      {formatCurrency(selectedOrder.subtotal)}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-700">Phí vận chuyển:</span>
-                    <span className="text-gray-900">{formatCurrency(selectedOrder.shippingFee)}</span>
+                    <span className="text-gray-900">
+                      {formatCurrency(selectedOrder.shippingFee)}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-700">Thuế:</span>
-                    <span className="text-gray-900">{formatCurrency(selectedOrder.taxTotal)}</span>
+                    <span className="text-gray-900">
+                      {formatCurrency(selectedOrder.taxTotal)}
+                    </span>
                   </div>
                   <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-300">
                     <span className="text-gray-900">Tổng cộng:</span>
-                    <span className="text-gray-900">{formatCurrency(selectedOrder.grandTotal)}</span>
+                    <span className="text-gray-900">
+                      {formatCurrency(selectedOrder.grandTotal)}
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Status Actions */}
               <div>
-                <h3 className="font-medium text-gray-900 mb-2">Cập nhật trạng thái</h3>
+                <h3 className="font-medium text-gray-900 mb-2">
+                  Cập nhật trạng thái
+                </h3>
                 <div className="flex gap-2 flex-wrap">
                   {selectedOrder.status === "PENDING" && (
                     <button
-                      onClick={() => handleUpdateStatus(selectedOrder.id, "PROCESSING")}
+                      onClick={() =>
+                        handleUpdateStatus(selectedOrder.id, "PROCESSING")
+                      }
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                     >
                       Xử lý đơn hàng
@@ -384,7 +427,9 @@ export default function AdminOrdersPage() {
                   )}
                   {selectedOrder.status === "PROCESSING" && (
                     <button
-                      onClick={() => handleUpdateStatus(selectedOrder.id, "SHIPPED")}
+                      onClick={() =>
+                        handleUpdateStatus(selectedOrder.id, "SHIPPED")
+                      }
                       className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
                     >
                       Đã giao cho vận chuyển
@@ -392,20 +437,25 @@ export default function AdminOrdersPage() {
                   )}
                   {selectedOrder.status === "SHIPPED" && (
                     <button
-                      onClick={() => handleUpdateStatus(selectedOrder.id, "DELIVERED")}
+                      onClick={() =>
+                        handleUpdateStatus(selectedOrder.id, "DELIVERED")
+                      }
                       className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                     >
                       Đã giao hàng
                     </button>
                   )}
-                  {selectedOrder.status !== "CANCELLED" && selectedOrder.status !== "DELIVERED" && (
-                    <button
-                      onClick={() => handleUpdateStatus(selectedOrder.id, "CANCELLED")}
-                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                    >
-                      Hủy đơn hàng
-                    </button>
-                  )}
+                  {selectedOrder.status !== "CANCELLED" &&
+                    selectedOrder.status !== "DELIVERED" && (
+                      <button
+                        onClick={() =>
+                          handleUpdateStatus(selectedOrder.id, "CANCELLED")
+                        }
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                      >
+                        Hủy đơn hàng
+                      </button>
+                    )}
                 </div>
               </div>
             </div>
