@@ -1,12 +1,101 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ShoppingCart, Search, Menu, X, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  ShoppingCart,
+  Search,
+  Menu,
+  X,
+  User,
+  LogOut,
+  ChevronDown,
+} from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+
+type AuthUser = {
+  fullName: string;
+  email: string;
+  roles: string[];
+};
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const router = useRouter();
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+  const { itemCount, openCart } = useCart();
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncUser = () => {
+      const userRaw = localStorage.getItem("currentUser");
+      if (userRaw) {
+        try {
+          const parsed = JSON.parse(userRaw) as AuthUser;
+          setAuthUser(parsed);
+        } catch (error) {
+          console.error("Cannot parse currentUser", error);
+          setAuthUser(null);
+        }
+      } else {
+        setAuthUser(null);
+      }
+    };
+
+    syncUser();
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === "currentUser" || event.key === "token") {
+        syncUser();
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    if (userMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [userMenuOpen]);
+
+  const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("currentUser");
+    }
+    setAuthUser(null);
+    setUserMenuOpen(false);
+    router.push("/");
+  };
+
+  const isAdmin = authUser?.roles?.includes("ADMIN");
+  const isStaff = authUser?.roles?.includes("STAFF");
+  const isCustomer = authUser?.roles?.includes("CUSTOMER");
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -129,23 +218,114 @@ export default function Header() {
             </button>
 
             {/* User */}
-            <Link
-              href="/auth/login"
-              className="p-2 text-gray-700 hover:text-gray-900 transition-colors"
-            >
-              <User className="h-5 w-5" />
-            </Link>
+            <div className="relative" ref={userMenuRef}>
+              {authUser ? (
+                <button
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  className="flex items-center space-x-2 rounded-full border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:border-gray-300 hover:text-gray-900"
+                >
+                  <div className="h-8 w-8 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-medium">
+                    {authUser.fullName?.charAt(0)?.toUpperCase() || "U"}
+                  </div>
+                  <div className="hidden sm:block text-left">
+                    <p className="text-sm font-medium text-gray-900">
+                      {authUser.fullName || "Tài khoản"}
+                    </p>
+                    <p className="text-xs text-gray-500">{authUser.email}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                </button>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  className="flex items-center space-x-2 rounded-full border border-gray-200 px-3 py-1.5 text-sm text-gray-700 hover:border-gray-300 hover:text-gray-900"
+                >
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline">Đăng nhập</span>
+                </Link>
+              )}
+
+              {authUser && userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      Bảng điều khiển Admin
+                    </Link>
+                  )}
+                  {isStaff && (
+                    <Link
+                      href="/staff"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      Bảng điều khiển Staff
+                    </Link>
+                  )}
+                  {isCustomer && (
+                    <>
+                      <Link
+                        href="/profile"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        Trang cá nhân
+                      </Link>
+                      <Link
+                        href="/profile/addresses"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        Sổ địa chỉ
+                      </Link>
+                      <Link
+                        href="/profile#orders"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        Đơn hàng của tôi
+                      </Link>
+                      <Link
+                        href="/profile#appointments"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        Lịch hẹn của tôi
+                      </Link>
+                      <Link
+                        href="/appointments"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        Đặt lịch
+                      </Link>
+                    </>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" /> Đăng xuất
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Cart */}
-            <Link
-              href="/cart"
+            <button
+              onClick={openCart}
               className="relative p-2 text-gray-700 hover:text-gray-900 transition-colors"
             >
               <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                0
-              </span>
-            </Link>
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {itemCount}
+                </span>
+              )}
+            </button>
 
             {/* Mobile menu button */}
             <button
