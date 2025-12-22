@@ -15,26 +15,37 @@ import {
 } from "@/services/customer/appointments";
 import { getCurrentUserId } from "@/utils/auth-storage";
 import { Calendar, Clock, MapPin, Plus, Trash2 } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 function formatTime(ts: string) {
-  return new Date(ts).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+  return new Date(ts).toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function CustomerAppointmentsPage() {
   const router = useRouter();
+  const { showError, showSuccess, showWarning, showInfo } = useToast();
   const [userId, setUserId] = useState<string>("");
 
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStoreId, setSelectedStoreId] = useState<string>("");
-  const [date, setDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
-  const [selectedSlot, setSelectedSlot] = useState<AppointmentSlot | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<AppointmentSlot | null>(
+    null
+  );
   const [note, setNote] = useState<string>("");
 
   const [booking, setBooking] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [loadingMine, setLoadingMine] = useState(false);
-  const [myAppointments, setMyAppointments] = useState<CustomerAppointment[]>([]);
+  const [myAppointments, setMyAppointments] = useState<CustomerAppointment[]>(
+    []
+  );
 
   useEffect(() => {
     const id = getCurrentUserId();
@@ -53,7 +64,7 @@ export default function CustomerAppointmentsPage() {
         if (data.length > 0) setSelectedStoreId(data[0].id);
       } catch (e) {
         console.error(e);
-        alert("Không thể tải danh sách cửa hàng");
+        showError("Không thể tải danh sách cửa hàng");
       }
     };
     loadStores();
@@ -74,7 +85,7 @@ export default function CustomerAppointmentsPage() {
       setSelectedSlot(null);
     } catch (e: any) {
       console.error(e);
-      alert(e?.response?.data?.error || "Không thể tải lịch trống");
+      showError(e?.response?.data?.error || "Không thể tải lịch trống");
     } finally {
       setLoadingSlots(false);
     }
@@ -88,7 +99,7 @@ export default function CustomerAppointmentsPage() {
       setMyAppointments(data);
     } catch (e: any) {
       console.error(e);
-      alert(e?.response?.data?.error || "Không thể tải lịch hẹn của bạn");
+      showError(e?.response?.data?.error || "Không thể tải lịch hẹn của bạn");
     } finally {
       setLoadingMine(false);
     }
@@ -106,8 +117,8 @@ export default function CustomerAppointmentsPage() {
 
   const handleBook = async () => {
     if (!userId) return;
-    if (!selectedStoreId) return alert("Vui lòng chọn cửa hàng");
-    if (!selectedSlot) return alert("Vui lòng chọn khung giờ");
+    if (!selectedStoreId) return showWarning("Vui lòng chọn cửa hàng");
+    if (!selectedSlot) return showWarning("Vui lòng chọn khung giờ");
 
     try {
       setBooking(true);
@@ -118,12 +129,12 @@ export default function CustomerAppointmentsPage() {
         end: selectedSlot.end,
         note,
       });
-      alert("Đặt lịch thành công!");
+      showSuccess("Đặt lịch thành công!");
       setNote("");
       await Promise.all([loadSlots(), loadMine()]);
     } catch (e: any) {
       console.error(e);
-      alert(e?.response?.data?.error || "Không thể đặt lịch");
+      showError(e?.response?.data?.error || "Không thể đặt lịch");
     } finally {
       setBooking(false);
     }
@@ -134,10 +145,10 @@ export default function CustomerAppointmentsPage() {
     try {
       await cancelAppointment(appointmentId);
       await Promise.all([loadSlots(), loadMine()]);
-      alert("Đã hủy lịch hẹn");
+      showSuccess("Đã hủy lịch hẹn");
     } catch (e: any) {
       console.error(e);
-      alert(e?.response?.data?.error || "Không thể hủy lịch");
+      showError(e?.response?.data?.error || "Không thể hủy lịch");
     }
   };
 
@@ -148,7 +159,9 @@ export default function CustomerAppointmentsPage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Đặt lịch khám mắt</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Đặt lịch khám mắt
+            </h1>
             <p className="mt-1 text-sm text-gray-600">
               Chọn cửa hàng, ngày và khung giờ phù hợp
             </p>
@@ -272,7 +285,9 @@ export default function CustomerAppointmentsPage() {
         <section className="bg-white border border-gray-200 rounded-lg shadow-sm">
           <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Lịch hẹn của bạn</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Lịch hẹn của bạn
+              </h2>
               <p className="text-sm text-gray-500">Quản lý các lịch đã đặt</p>
             </div>
             <button
@@ -290,7 +305,10 @@ export default function CustomerAppointmentsPage() {
           ) : (
             <div className="divide-y divide-gray-200">
               {myAppointments.map((a) => (
-                <div key={a.id} className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div
+                  key={a.id}
+                  className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                >
                   <div>
                     <p className="text-sm font-semibold text-gray-900">
                       {storeMap.get(a.storeId)?.name || `Store ${a.storeId}`}
@@ -308,7 +326,11 @@ export default function CustomerAppointmentsPage() {
                         Trạng thái: <b>{a.status}</b>
                       </span>
                     </p>
-                    {a.note && <p className="mt-1 text-sm text-gray-600">Ghi chú: {a.note}</p>}
+                    {a.note && (
+                      <p className="mt-1 text-sm text-gray-600">
+                        Ghi chú: {a.note}
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -330,5 +352,3 @@ export default function CustomerAppointmentsPage() {
     </div>
   );
 }
-
-

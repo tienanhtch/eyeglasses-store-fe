@@ -15,6 +15,7 @@ import {
   updateCartItem,
   removeCartItem,
 } from "@/services/customer/cart";
+import { useToast } from "@/contexts/ToastContext";
 
 interface CartContextType {
   cart: Cart | null;
@@ -37,6 +38,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const { showError, showSuccess, showWarning } = useToast();
 
   // Load userId from localStorage on mount
   useEffect(() => {
@@ -74,7 +76,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = async (variantId: string, qty: number = 1) => {
     if (!userId) {
-      alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
+      showWarning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng");
       return;
     }
 
@@ -85,9 +87,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setIsOpen(true); // Mở drawer để xem giỏ hàng
       // Refresh lại cart để đảm bảo hiển thị đầy đủ
       await refreshCart();
+      showSuccess("Đã thêm sản phẩm vào giỏ hàng");
     } catch (error) {
       console.error("Failed to add item to cart:", error);
-      alert("Không thể thêm sản phẩm vào giỏ hàng");
+      showError("Không thể thêm sản phẩm vào giỏ hàng");
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +98,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const buyNow = async (variantId: string, qty: number = 1) => {
     if (!userId) {
-      alert("Vui lòng đăng nhập để mua hàng");
+      showWarning("Vui lòng đăng nhập để mua hàng");
+      setTimeout(() => {
+        window.location.href = "/auth/login";
+      }, 1500);
       return;
     }
 
@@ -107,7 +113,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       window.location.href = "/checkout";
     } catch (error) {
       console.error("Failed to add item to cart:", error);
-      alert("Không thể thêm sản phẩm vào giỏ hàng");
+      showError("Không thể thêm sản phẩm vào giỏ hàng");
       setIsLoading(false);
     }
   };
@@ -119,7 +125,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setCart(updatedCart);
     } catch (error) {
       console.error("Failed to update cart item:", error);
-      alert("Không thể cập nhật số lượng");
+      showError("Không thể cập nhật số lượng");
     } finally {
       setIsLoading(false);
     }
@@ -130,9 +136,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       const updatedCart = await removeCartItem(itemId);
       setCart(updatedCart);
+      showSuccess("Đã xóa sản phẩm khỏi giỏ hàng");
     } catch (error) {
       console.error("Failed to remove cart item:", error);
-      alert("Không thể xóa sản phẩm");
+      showError("Không thể xóa sản phẩm");
     } finally {
       setIsLoading(false);
     }

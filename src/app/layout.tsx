@@ -29,12 +29,12 @@ export default function RootLayout({
       <body
         className={`${afacad.variable} font-afacad antialiased bg-white text-gray-900`}
       >
-        <CartProvider>
-          <ToastProvider>
+        <ToastProvider>
+          <CartProvider>
             {children}
             <CartDrawer />
-          </ToastProvider>
-        </CartProvider>
+          </CartProvider>
+        </ToastProvider>
       </body>
     </html>
   );

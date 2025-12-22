@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Product } from "@/types";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/contexts/ToastContext";
 import { useState } from "react";
 
 interface ProductCardProps {
@@ -18,12 +19,13 @@ export default function ProductCard({ product }: ProductCardProps) {
       product.colors.every((color) => !color.isAvailable));
 
   const { addToCart, buyNow } = useCart();
+  const { showWarning } = useToast();
   const [isAdding, setIsAdding] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
 
   const handleAddToCart = async () => {
     if (!product.variantId) {
-      alert("Sản phẩm này chưa có phiên bản để thêm vào giỏ");
+      showWarning("Sản phẩm này chưa có phiên bản để thêm vào giỏ");
       return;
     }
 
@@ -37,7 +39,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const handleBuyNow = async () => {
     if (!product.variantId) {
-      alert("Sản phẩm này chưa có phiên bản để mua");
+      showWarning("Sản phẩm này chưa có phiên bản để mua");
       return;
     }
 

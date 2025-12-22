@@ -13,9 +13,15 @@ import {
 } from "@/services/customer/orders";
 import { getUserAddresses, type UserAddress } from "@/services/customer/users";
 import { getStores, type Store } from "@/services/stores";
+import PaymentMethodSelector, {
+  type PaymentMethod,
+} from "@/components/checkout/PaymentMethodSelector";
+import { createPayment } from "@/services/payment";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { showSuccess, showError, showWarning } = useToast();
   const [userId, setUserId] = useState<string>("");
 
   const [cart, setCart] = useState<Cart | null>(null);
@@ -25,6 +31,8 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
+
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
 
   const [payload, setPayload] = useState<CheckoutPayload>({
     fulfillment: "DELIVERY",
@@ -90,12 +98,43 @@ export default function CheckoutPage() {
     if (!canPlace) return;
     try {
       setPlacing(true);
+
+      // Step 1: Create order
       const order = await checkout(userId, payload);
       setPlacedOrder(order);
-      alert("Đặt hàng thành công!");
+
+      // Step 2: Handle payment based on method
+      if (paymentMethod === "COD") {
+        // COD - no payment gateway, just show success
+        showSuccess("Đặt hàng thành công! Bạn sẽ thanh toán khi nhận hàng.");
+      } else {
+        // VNPAY or MOMO - redirect to payment gateway
+        try {
+          const paymentResponse = await createPayment({
+            orderId: order.id,
+            paymentMethod: paymentMethod,
+          });
+
+          if (paymentResponse.success && paymentResponse.paymentUrl) {
+            showSuccess("Đang chuyển đến cổng thanh toán...");
+            // Redirect to payment gateway
+            window.location.href = paymentResponse.paymentUrl;
+          } else {
+            showError(
+              paymentResponse.message || "Không thể tạo liên kết thanh toán"
+            );
+          }
+        } catch (paymentError: any) {
+          console.error("Payment error:", paymentError);
+          showError(
+            "Lỗi khi tạo thanh toán: " +
+              (paymentError?.response?.data?.error || paymentError.message)
+          );
+        }
+      }
     } catch (e: any) {
       console.error(e);
-      alert(e?.response?.data?.error || "Không thể tạo đơn hàng");
+      showError(e?.response?.data?.error || "Không thể tạo đơn hàng");
     } finally {
       setPlacing(false);
     }
@@ -132,7 +171,8 @@ export default function CheckoutPage() {
               Mã đơn: <b>{placedOrder.orderNo}</b>
             </p>
             <p className="text-sm text-gray-700">
-              Tổng tiền: <b>{placedOrder.grandTotal?.toLocaleString("vi-VN")} ₫</b>
+              Tổng tiền:{" "}
+              <b>{placedOrder.grandTotal?.toLocaleString("vi-VN")} ₫</b>
             </p>
             <div className="flex gap-3">
               <button
@@ -219,7 +259,10 @@ export default function CheckoutPage() {
                       <select
                         value={payload.storeId ?? ""}
                         onChange={(e) =>
-                          setPayload((p) => ({ ...p, storeId: e.target.value || null }))
+                          setPayload((p) => ({
+                            ...p,
+                            storeId: e.target.value || null,
+                          }))
                         }
                         className="w-full rounded-md border border-gray-300 px-3 py-2"
                       >
@@ -235,6 +278,21 @@ export default function CheckoutPage() {
                 </div>
               </section>
 
+              {/* Payment Method Section */}
+              <section className="bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Phương thức thanh toán
+                  </h2>
+                </div>
+                <div className="p-6">
+                  <PaymentMethodSelector
+                    selectedMethod={paymentMethod}
+                    onMethodChange={setPaymentMethod}
+                  />
+                </div>
+              </section>
+
               <section className="bg-white border border-gray-200 rounded-lg shadow-sm">
                 <div className="px-6 py-4 border-b border-gray-200">
                   <h2 className="text-lg font-semibold text-gray-900">
@@ -243,7 +301,10 @@ export default function CheckoutPage() {
                 </div>
                 <div className="divide-y divide-gray-200">
                   {cart?.items?.map((it) => (
-                    <div key={it.id} className="p-6 flex items-center justify-between gap-4">
+                    <div
+                      key={it.id}
+                      className="p-6 flex items-center justify-between gap-4"
+                    >
                       <div>
                         <p className="text-sm font-semibold text-gray-900">
                           {it.variant.productName || it.variant.sku}
@@ -263,7 +324,9 @@ export default function CheckoutPage() {
                     </div>
                   ))}
                   {cart?.items?.length === 0 && (
-                    <div className="p-6 text-gray-600">Giỏ hàng đang trống.</div>
+                    <div className="p-6 text-gray-600">
+                      Giỏ hàng đang trống.
+                    </div>
                   )}
                 </div>
               </section>
@@ -298,5 +361,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-
