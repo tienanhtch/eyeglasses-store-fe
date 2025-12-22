@@ -11,7 +11,15 @@ import {
 } from "@/services/staff/appointments";
 import { getStores, Store } from "@/services/stores";
 import { getCurrentUserId } from "@/utils/auth-storage";
-import { Calendar, Clock, User, Phone, CheckCircle, XCircle, Eye } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  User,
+  Phone,
+  CheckCircle,
+  XCircle,
+  Eye,
+} from "lucide-react";
 
 export default function StaffAppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -23,7 +31,8 @@ export default function StaffAppointmentsPage() {
     new Date().toISOString().split("T")[0]
   );
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<Appointment | null>(null);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
 
   useEffect(() => {
@@ -244,12 +253,13 @@ export default function StaffAppointmentsPage() {
                                 minute: "2-digit",
                               })}{" "}
                               -{" "}
-                              {new Date(
-                                appointment.endTime
-                              ).toLocaleTimeString("vi-VN", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {new Date(appointment.endTime).toLocaleTimeString(
+                                "vi-VN",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
                             </span>
                           </div>
                           {appointment.note && (
@@ -321,192 +331,209 @@ export default function StaffAppointmentsPage() {
 
       {/* Complete Modal */}
       {showCompleteModal && selectedAppointment && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen px-4">
-            <div
-              className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        <div className="fixed inset-0 bg-gray-900/30 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
+            <button
+              type="button"
               onClick={() => setShowCompleteModal(false)}
-            ></div>
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
 
-            <div className="relative bg-white rounded-lg max-w-2xl w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Hoàn thành lịch hẹn - Nhập kết quả đo mắt
-              </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Hoàn thành lịch hẹn - Nhập kết quả đo mắt
+            </h3>
 
-              <form onSubmit={handleComplete} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Right Eye */}
-                  <div className="col-span-2">
-                    <h4 className="font-medium text-gray-700 mb-2">Mắt phải (OD)</h4>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      SPH (Cầu)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.25"
-                      value={prescriptionData.sphereRight}
-                      onChange={(e) =>
-                        setPrescriptionData({
-                          ...prescriptionData,
-                          sphereRight: parseFloat(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      CYL (Trụ)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.25"
-                      value={prescriptionData.cylinderRight}
-                      onChange={(e) =>
-                        setPrescriptionData({
-                          ...prescriptionData,
-                          cylinderRight: parseFloat(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      AXIS (Trục)
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="180"
-                      value={prescriptionData.axisRight}
-                      onChange={(e) =>
-                        setPrescriptionData({
-                          ...prescriptionData,
-                          axisRight: parseInt(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </div>
-
-                  {/* Left Eye */}
-                  <div className="col-span-2 mt-4">
-                    <h4 className="font-medium text-gray-700 mb-2">Mắt trái (OS)</h4>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      SPH (Cầu)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.25"
-                      value={prescriptionData.sphereLeft}
-                      onChange={(e) =>
-                        setPrescriptionData({
-                          ...prescriptionData,
-                          sphereLeft: parseFloat(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      CYL (Trụ)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.25"
-                      value={prescriptionData.cylinderLeft}
-                      onChange={(e) =>
-                        setPrescriptionData({
-                          ...prescriptionData,
-                          cylinderLeft: parseFloat(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      AXIS (Trục)
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="180"
-                      value={prescriptionData.axisLeft}
-                      onChange={(e) =>
-                        setPrescriptionData({
-                          ...prescriptionData,
-                          axisLeft: parseInt(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </div>
-
-                  {/* PD */}
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      PD (Khoảng cách đồng tử)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.5"
-                      value={prescriptionData.pd}
-                      onChange={(e) =>
-                        setPrescriptionData({
-                          ...prescriptionData,
-                          pd: parseFloat(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                      required
-                    />
-                  </div>
-
-                  {/* Note */}
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ghi chú
-                    </label>
-                    <textarea
-                      value={prescriptionData.note}
-                      onChange={(e) =>
-                        setPrescriptionData({
-                          ...prescriptionData,
-                          note: e.target.value,
-                        })
-                      }
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </div>
+            <form onSubmit={handleComplete} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {/* Right Eye */}
+                <div className="col-span-2">
+                  <h4 className="font-medium text-gray-700 mb-2">
+                    Mắt phải (OD)
+                  </h4>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    SPH (Cầu)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.25"
+                    value={prescriptionData.sphereRight}
+                    onChange={(e) =>
+                      setPrescriptionData({
+                        ...prescriptionData,
+                        sphereRight: parseFloat(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    CYL (Trụ)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.25"
+                    value={prescriptionData.cylinderRight}
+                    onChange={(e) =>
+                      setPrescriptionData({
+                        ...prescriptionData,
+                        cylinderRight: parseFloat(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    AXIS (Trục)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="180"
+                    value={prescriptionData.axisRight}
+                    onChange={(e) =>
+                      setPrescriptionData({
+                        ...prescriptionData,
+                        axisRight: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
                 </div>
 
-                <div className="flex justify-end space-x-3 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => setShowCompleteModal(false)}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                  >
-                    Hoàn thành & Lưu toa
-                  </button>
+                {/* Left Eye */}
+                <div className="col-span-2 mt-4">
+                  <h4 className="font-medium text-gray-700 mb-2">
+                    Mắt trái (OS)
+                  </h4>
                 </div>
-              </form>
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    SPH (Cầu)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.25"
+                    value={prescriptionData.sphereLeft}
+                    onChange={(e) =>
+                      setPrescriptionData({
+                        ...prescriptionData,
+                        sphereLeft: parseFloat(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    CYL (Trụ)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.25"
+                    value={prescriptionData.cylinderLeft}
+                    onChange={(e) =>
+                      setPrescriptionData({
+                        ...prescriptionData,
+                        cylinderLeft: parseFloat(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    AXIS (Trục)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="180"
+                    value={prescriptionData.axisLeft}
+                    onChange={(e) =>
+                      setPrescriptionData({
+                        ...prescriptionData,
+                        axisLeft: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+
+                {/* PD */}
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    PD (Khoảng cách đồng tử)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={prescriptionData.pd}
+                    onChange={(e) =>
+                      setPrescriptionData({
+                        ...prescriptionData,
+                        pd: parseFloat(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    required
+                  />
+                </div>
+
+                {/* Note */}
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Ghi chú
+                  </label>
+                  <textarea
+                    value={prescriptionData.note}
+                    onChange={(e) =>
+                      setPrescriptionData({
+                        ...prescriptionData,
+                        note: e.target.value,
+                      })
+                    }
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowCompleteModal(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Hoàn thành & Lưu toa
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
