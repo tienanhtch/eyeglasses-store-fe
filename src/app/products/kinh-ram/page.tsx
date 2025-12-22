@@ -1,17 +1,35 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import ProductCard from "@/components/product/ProductCard";
 import CollectionCategories from "@/components/product/CollectionCategories";
-import { mockProducts } from "@/constants/mock-data";
+import ProductGrid from "@/components/product/ProductGrid";
+import { getPublicProducts } from "@/services/catalog";
+import { mapPublicProductToUiProduct } from "@/utils/catalog-mappers";
+import type { Product } from "@/types";
 
 export default function KinhRamPage() {
-  // Filter sunglasses from mock data
-  const sunglasses = mockProducts.filter(
-    (product) =>
-      product.category === "sunglasses" ||
-      product.name.toLowerCase().includes("kính râm") ||
-      product.name.toLowerCase().includes("sunglasses")
-  );
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const resp = await getPublicProducts();
+        const filtered = resp.products.filter((p) =>
+          p.categories?.some((c) => c.slug === "kinh-ram")
+        );
+        setProducts(filtered.map(mapPublicProductToUiProduct));
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   // Category filter data for sunglasses
   const categories = [
@@ -110,11 +128,7 @@ export default function KinhRamPage() {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-          {sunglasses.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <ProductGrid products={products} isLoading={loading} />
 
         {/* Features Section */}
         <div className="bg-gray-50 rounded-lg p-8 mb-12">

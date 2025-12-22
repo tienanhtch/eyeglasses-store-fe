@@ -1,63 +1,120 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import ProductCard from "@/components/product/ProductCard";
 import CollectionCategories from "@/components/product/CollectionCategories";
-import { mockProducts } from "@/constants/mock-data";
+import ProductGrid from "@/components/product/ProductGrid";
+import { searchPublicProducts, SearchItem } from "@/services/catalog";
+import type { Product } from "@/types";
 
 export default function PhuKienPage() {
-  // Filter accessories from mock data
-  const accessories = mockProducts.filter(
-    (product) =>
-      product.category === "accessories" ||
-      product.name.toLowerCase().includes("phụ kiện") ||
-      product.name.toLowerCase().includes("accessories")
-  );
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("view-all");
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+
+        const params: any = {
+          categorySlug: "phu-kien",
+        };
+
+        // Apply filters based on active category
+        if (activeFilter !== "view-all") {
+          // Map filter ID to search keyword
+          const filterKeywordMap: { [key: string]: string } = {
+            "hop-kinh": "hộp",
+            "khan-lau": "khăn",
+            "day-deo": "dây",
+            "dung-dich": "dung dịch",
+          };
+
+          const keyword = filterKeywordMap[activeFilter];
+          if (keyword) {
+            params.q = keyword;
+          }
+        }
+
+        const resp = await searchPublicProducts(params);
+
+        console.log("Phụ kiện API params:", params);
+        console.log("Phụ kiện API response:", resp);
+        console.log("Number of items:", resp.items.length);
+
+        // Map SearchItem to Product type
+        const mappedProducts: Product[] = resp.items.map(
+          (item: SearchItem) => ({
+            id: item.id,
+            slug: item.slug,
+            name: item.name,
+            price: item.price || 0,
+            originalPrice:
+              item.maxPrice && item.maxPrice > (item.price || 0)
+                ? item.maxPrice
+                : undefined,
+            images: item.thumbnail ? [item.thumbnail.url] : [],
+            colors: item.colors || [],
+            material: item.material,
+            isOutOfStock: !item.inStock,
+            variantId: item.variantId || undefined,
+          })
+        );
+
+        setProducts(mappedProducts);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [activeFilter]);
 
   // Category filter data for accessories
   const categories = [
     {
       id: "view-all",
-      name: "View All",
+      name: "Tất cả",
       slug: "view-all-phu-kien",
       image: "/images/placeholder.svg",
-      isActive: true,
+      isActive: activeFilter === "view-all",
     },
     {
       id: "hop-kinh",
       name: "Hộp kính",
       slug: "hop-kinh",
       image: "/images/placeholder.svg",
-      isActive: false,
+      isActive: activeFilter === "hop-kinh",
     },
     {
       id: "khan-lau",
       name: "Khăn lau",
       slug: "khan-lau",
       image: "/images/placeholder.svg",
-      isActive: false,
+      isActive: activeFilter === "khan-lau",
     },
     {
       id: "day-deo",
       name: "Dây đeo",
       slug: "day-deo",
       image: "/images/placeholder.svg",
-      isActive: false,
+      isActive: activeFilter === "day-deo",
     },
     {
       id: "dung-dich",
-      name: "Dung dịch",
+      name: "Dung dịch vệ sinh",
       slug: "dung-dich",
       image: "/images/placeholder.svg",
-      isActive: false,
-    },
-    {
-      id: "bao-ve",
-      name: "Bảo vệ",
-      slug: "bao-ve",
-      image: "/images/placeholder.svg",
-      isActive: false,
+      isActive: activeFilter === "dung-dich",
     },
   ];
+
+  const handleCategoryClick = (categoryId: string) => {
+    setActiveFilter(categoryId);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -68,97 +125,129 @@ export default function PhuKienPage() {
         <CollectionCategories
           categories={categories}
           basePath="/products/phu-kien"
+          onCategoryClick={handleCategoryClick}
         />
 
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3">
             Phụ kiện kính mắt
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Bộ sưu tập phụ kiện đa dạng để bảo vệ, làm sạch và tăng tuổi thọ cho
             kính mắt của bạn
           </p>
         </div>
 
         {/* Categories */}
-        <div className="mb-8">
-          <div className="flex flex-wrap gap-4 justify-center">
-            <button className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors">
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2 sm:gap-4 justify-center">
+            <button
+              onClick={() => handleCategoryClick("view-all")}
+              className={`px-3 sm:px-4 py-2 text-sm sm:text-base rounded-md transition-colors cursor-pointer ${
+                activeFilter === "view-all"
+                  ? "bg-gray-900 text-white"
+                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
+            >
               Tất cả
             </button>
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
+            <button
+              onClick={() => handleCategoryClick("hop-kinh")}
+              className={`px-3 sm:px-4 py-2 text-sm sm:text-base rounded-md transition-colors cursor-pointer ${
+                activeFilter === "hop-kinh"
+                  ? "bg-gray-900 text-white"
+                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
+            >
               Hộp kính
             </button>
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
+            <button
+              onClick={() => handleCategoryClick("khan-lau")}
+              className={`px-3 sm:px-4 py-2 text-sm sm:text-base rounded-md transition-colors cursor-pointer ${
+                activeFilter === "khan-lau"
+                  ? "bg-gray-900 text-white"
+                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
+            >
               Khăn lau
             </button>
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
+            <button
+              onClick={() => handleCategoryClick("day-deo")}
+              className={`px-3 sm:px-4 py-2 text-sm sm:text-base rounded-md transition-colors cursor-pointer ${
+                activeFilter === "day-deo"
+                  ? "bg-gray-900 text-white"
+                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
+            >
               Dây đeo
             </button>
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
+            <button
+              onClick={() => handleCategoryClick("dung-dich")}
+              className={`px-3 sm:px-4 py-2 text-sm sm:text-base rounded-md transition-colors cursor-pointer ${
+                activeFilter === "dung-dich"
+                  ? "bg-gray-900 text-white"
+                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
+            >
               Dung dịch vệ sinh
             </button>
           </div>
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-          {accessories.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <ProductGrid products={products} isLoading={loading} />
 
         {/* Accessories Categories */}
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+        <div className="mt-12 mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-6">
             Danh mục phụ kiện
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg"></div>
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 text-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded-lg"></div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                 Hộp kính
               </h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 text-xs sm:text-sm">
                 Bảo vệ kính khỏi trầy xước và va đập
               </p>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-green-600 rounded-lg"></div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 text-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-600 rounded-lg"></div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                 Khăn lau
               </h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 text-xs sm:text-sm">
                 Vải mềm chuyên dụng để lau kính
               </p>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-purple-600 rounded-lg"></div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 text-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-600 rounded-lg"></div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                 Dây đeo
               </h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 text-xs sm:text-sm">
                 Giữ kính an toàn khi hoạt động
               </p>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-orange-600 rounded-lg"></div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 text-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-600 rounded-lg"></div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                 Dung dịch vệ sinh
               </h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 text-xs sm:text-sm">
                 Làm sạch và khử trùng kính
               </p>
             </div>
@@ -166,16 +255,16 @@ export default function PhuKienPage() {
         </div>
 
         {/* Care Guide */}
-        <div className="bg-gray-50 rounded-lg p-8 mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+        <div className="bg-gray-50 rounded-lg p-4 sm:p-6 md:p-8 mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-6 sm:mb-8">
             Hướng dẫn chăm sóc kính
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-full"></div>
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded-full"></div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
                 Làm sạch hàng ngày
               </h3>
               <p className="text-gray-600 text-sm">
@@ -184,10 +273,10 @@ export default function PhuKienPage() {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-green-600 rounded-full"></div>
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-600 rounded-full"></div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
                 Bảo quản đúng cách
               </h3>
               <p className="text-gray-600 text-sm">
@@ -196,10 +285,10 @@ export default function PhuKienPage() {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-purple-600 rounded-full"></div>
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-purple-600 rounded-full"></div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
                 Kiểm tra định kỳ
               </h3>
               <p className="text-gray-600 text-sm">
@@ -211,12 +300,12 @@ export default function PhuKienPage() {
 
         {/* Product Care Tips */}
         <div className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-6 sm:mb-8">
             Mẹo chăm sóc kính
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 Những điều nên làm
               </h3>
               <ul className="space-y-2 text-gray-600">
@@ -227,8 +316,8 @@ export default function PhuKienPage() {
                 <li>• Kiểm tra định kỳ tại cửa hàng</li>
               </ul>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                 Những điều tránh
               </h3>
               <ul className="space-y-2 text-gray-600">

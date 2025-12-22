@@ -2,19 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Calendar,
-  Users,
-  Package,
-  Settings,
+  Wrench,
+  FileText,
   Menu,
   X,
   LogOut,
-  Eye,
-  Clock,
-  CheckCircle,
 } from "lucide-react";
 
 const staffMenuItems = [
@@ -31,22 +27,16 @@ const staffMenuItems = [
     icon: Calendar,
   },
   {
-    id: "customers",
-    name: "Khách hàng",
-    href: "/staff/customers",
-    icon: Users,
+    id: "service-tickets",
+    name: "Phiếu dịch vụ",
+    href: "/staff/service-tickets",
+    icon: Wrench,
   },
   {
-    id: "services",
-    name: "Dịch vụ",
-    href: "/staff/services",
-    icon: Package,
-  },
-  {
-    id: "settings",
-    name: "Cài đặt",
-    href: "/staff/settings",
-    icon: Settings,
+    id: "prescriptions",
+    name: "Toa kính",
+    href: "/staff/prescriptions",
+    icon: FileText,
   },
 ];
 
@@ -57,6 +47,12 @@ export default function StaffLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    router.push("/auth/login");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -117,7 +113,10 @@ export default function StaffLayout({
 
           {/* Logout button */}
           <div className="p-4 border-t border-gray-200">
-            <button className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md transition-colors">
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md transition-colors"
+            >
               <LogOut className="mr-3 h-5 w-5" />
               Đăng xuất
             </button>

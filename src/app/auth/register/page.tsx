@@ -2,24 +2,89 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { AxiosError } from "axios";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
+import { register } from "@/services/auth";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
   });
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: Implement register logic
-    console.log("Register:", formData);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMessage("Mật khẩu xác nhận không khớp.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await register({
+        email: formData.email.trim(),
+        password: formData.password,
+        fullName: formData.fullName.trim(),
+        phone: formData.phone.trim(),
+      });
+
+      // Backend trả về { token, user } hoặc { data: { ... } }
+      const token = response.token || response.data?.token;
+      const user = response.user || response.data?.user || response.data;
+
+      if (token && user) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("token", token);
+          localStorage.setItem("currentUser", JSON.stringify(user));
+        }
+      }
+
+      setSuccessMessage("Đăng ký thành công! Đang chuyển hướng...");
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      setTimeout(() => {
+        router.push("/");
+      }, 1200);
+    } catch (error) {
+      let message = "Đăng ký thất bại. Vui lòng thử lại.";
+
+      if (error instanceof AxiosError) {
+        const errorData = error.response?.data as
+          | { error?: string; message?: string }
+          | undefined;
+        if (errorData?.error) {
+          message = errorData.error;
+        } else if (errorData?.message) {
+          message = errorData.message;
+        }
+      }
+
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +112,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
-                htmlFor="name"
+                htmlFor="fullName"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Họ và tên
@@ -56,9 +121,9 @@ export default function RegisterPage() {
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
+                  id="fullName"
+                  name="fullName"
+                  value={formData.fullName}
                   onChange={handleChange}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                   placeholder="Nhập họ và tên"
@@ -84,6 +149,28 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                   placeholder="Nhập email của bạn"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Số điện thoại
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  placeholder="Nhập số điện thoại"
                   required
                 />
               </div>
@@ -155,6 +242,18 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {errorMessage && (
+              <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
+                {errorMessage}
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-600">
+                {successMessage}
+              </div>
+            )}
+
             <div className="flex items-center">
               <input type="checkbox" className="mr-2" required />
               <span className="text-sm text-gray-600">
@@ -171,9 +270,10 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              className="w-full bg-gray-900 text-white py-2 px-4 rounded-md hover:bg-gray-800 transition-colors font-medium"
+              disabled={isSubmitting}
+              className="w-full bg-gray-900 text-white py-2 px-4 rounded-md transition-colors font-medium disabled:cursor-not-allowed disabled:opacity-70 hover:bg-gray-800"
             >
-              Đăng ký
+              {isSubmitting ? "Đang xử lý..." : "Đăng ký"}
             </button>
           </form>
 

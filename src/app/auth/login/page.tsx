@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { AxiosError } from "axios";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { login } from "@/services/auth";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,11 +15,80 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: Implement login logic
-    console.log("Login:", formData);
+    setErrorMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      console.log("Attempting login with:", formData.email);
+      const response = await login({
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+
+      console.log("Login response:", response);
+
+      // Backend trả về { token, user } hoặc { data: { token, user } }
+      const token = response.token || response.data?.token;
+      const user = response.user || response.data?.user;
+
+      console.log("Extracted token:", token ? "exists" : "missing");
+      console.log("Extracted user:", user);
+
+      if (!token || !user) {
+        throw new Error("Invalid response from server");
+      }
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", token);
+        localStorage.setItem("currentUser", JSON.stringify(user));
+        console.log("Saved to localStorage");
+      }
+
+      const roles = user.roles || [];
+      console.log("User roles:", roles);
+
+      // Redirect based on role
+      let redirectPath = "/";
+
+      if (roles.includes("ADMIN")) {
+        console.log("Redirecting to admin...");
+        redirectPath = "/admin";
+      } else if (roles.includes("STAFF")) {
+        console.log("Redirecting to staff...");
+        redirectPath = "/staff";
+      } else {
+        console.log("Redirecting to home...");
+      }
+
+      // Use window.location for immediate redirect
+      window.location.href = redirectPath;
+    } catch (error) {
+      console.error("Login error:", error);
+      let message = "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
+
+      if (error instanceof AxiosError) {
+        const errorData = error.response?.data as
+          | { error?: string; message?: string }
+          | undefined;
+        if (errorData?.error) {
+          message = errorData.error;
+        } else if (errorData?.message) {
+          message = errorData.message;
+        }
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,6 +167,12 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {errorMessage && (
+              <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
+                {errorMessage}
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <label className="flex items-center">
                 <input type="checkbox" className="mr-2" />
@@ -110,9 +188,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full bg-gray-900 text-white py-2 px-4 rounded-md hover:bg-gray-800 transition-colors font-medium"
+              disabled={isSubmitting}
+              className="w-full bg-gray-900 text-white py-2 px-4 rounded-md transition-colors font-medium hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Đăng nhập
+              {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
             </button>
           </form>
 
