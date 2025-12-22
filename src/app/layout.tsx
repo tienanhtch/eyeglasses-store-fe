@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Afacad } from "next/font/google";
+import { ToastProvider } from "@/contexts/ToastContext";
+import { CartProvider } from "@/contexts/CartContext";
+import CartDrawer from "@/components/cart/CartDrawer";
 import "./globals.css";
 
 const afacad = Afacad({
@@ -26,7 +29,12 @@ export default function RootLayout({
       <body
         className={`${afacad.variable} font-afacad antialiased bg-white text-gray-900`}
       >
-        {children}
+        <CartProvider>
+          <ToastProvider>
+            {children}
+            <CartDrawer />
+          </ToastProvider>
+        </CartProvider>
       </body>
     </html>
   );
