@@ -281,7 +281,7 @@ export const mockPromotions: Promotion[] = [
     type: 'free_shipping',
     value: 0,
     minOrderAmount: 2000000,
-    usageLimit: null,
+    usageLimit: undefined,
     usedCount: 89,
     startDate: '2024-01-01',
     endDate: '2024-06-30',

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductGrid from "@/components/product/ProductGrid";
@@ -10,7 +10,7 @@ import { Filter, SortAsc } from "lucide-react";
 import { searchPublicProducts, SearchItem } from "@/services/catalog";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function KinhCanPage() {
+function KinhCanContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -361,5 +361,28 @@ export default function KinhCanPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function KinhCanPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen">
+          <Header />
+          <main className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-center h-96">
+              <div className="text-center">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                <p className="mt-4 text-gray-600">Đang tải sản phẩm...</p>
+              </div>
+            </div>
+          </main>
+          <Footer />
+        </div>
+      }
+    >
+      <KinhCanContent />
+    </Suspense>
   );
 }

@@ -14,6 +14,7 @@ import {
   Key,
   Bell,
   Shield,
+  Settings,
 } from "lucide-react";
 
 export default function SettingsPage() {

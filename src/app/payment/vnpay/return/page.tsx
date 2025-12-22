@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/services/payment";
 import { useToast } from "@/contexts/ToastContext";
 
-export default function VNPayReturnPage() {
+function VNPayReturnContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { showSuccess, showError } = useToast();
@@ -277,5 +277,24 @@ export default function VNPayReturnPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VNPayReturnPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+            <p className="mt-4 text-gray-600">
+              Đang xử lý kết quả thanh toán...
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <VNPayReturnContent />
+    </Suspense>
   );
 }

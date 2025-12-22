@@ -21,6 +21,8 @@ export type UserResponse = {
 export type RegisterResponse = {
   success?: boolean;
   message?: string;
+  token?: string;
+  user?: UserResponse;
   data?: {
     id: string;
     email: string;
@@ -28,10 +30,9 @@ export type RegisterResponse = {
     phone: string;
     isActive: boolean;
     createdAt: string | null;
+    token?: string;
+    user?: UserResponse;
   };
-  // Legacy format support
-  user?: UserResponse;
-  token?: string;
 };
 
 export type LoginPayload = {
@@ -42,13 +43,12 @@ export type LoginPayload = {
 export type LoginResponse = {
   success?: boolean;
   message?: string;
+  token?: string;
+  user?: UserResponse;
   data?: {
     token: string;
     user: UserResponse;
   };
-  // Legacy format support
-  user?: UserResponse;
-  token?: string;
 };
 
 export const register = (payload: RegisterPayload) => {

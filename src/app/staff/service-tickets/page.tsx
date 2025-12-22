@@ -8,7 +8,14 @@ import {
   ServiceTicketUpdateDto,
 } from "@/services/staff/service-tickets";
 import { getStores, Store } from "@/services/stores";
-import { FileText, Clock, User, Phone, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  FileText,
+  Clock,
+  User,
+  Phone,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 
 export default function StaffServiceTicketsPage() {
   const [tickets, setTickets] = useState<ServiceTicket[]>([]);
@@ -16,7 +23,9 @@ export default function StaffServiceTicketsPage() {
   const [stores, setStores] = useState<Store[]>([]);
   const [selectedStoreId, setSelectedStoreId] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [selectedTicket, setSelectedTicket] = useState<ServiceTicket | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<ServiceTicket | null>(
+    null
+  );
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
@@ -300,13 +309,13 @@ export default function StaffServiceTicketsPage() {
                   </p>
                 </div>
 
-                {selectedTicket.resolutionNote && (
+                {selectedTicket.completionNotes && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Ghi chú xử lý
                     </label>
                     <p className="mt-1 text-sm text-gray-900">
-                      {selectedTicket.resolutionNote}
+                      {selectedTicket.completionNotes}
                     </p>
                   </div>
                 )}
@@ -333,18 +342,6 @@ export default function StaffServiceTicketsPage() {
                       )}
                     </p>
                   </div>
-                  {selectedTicket.resolvedAt && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Ngày hoàn thành
-                      </label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {new Date(selectedTicket.resolvedAt).toLocaleString(
-                          "vi-VN"
-                        )}
-                      </p>
-                    </div>
-                  )}
                 </div>
 
                 {/* Actions */}
@@ -423,4 +420,3 @@ export default function StaffServiceTicketsPage() {
     </div>
   );
 }
-

@@ -50,14 +50,15 @@ export default function PhuKienPage() {
             id: item.id,
             slug: item.slug,
             name: item.name,
+            category: "Phụ kiện",
             price: item.price || 0,
             originalPrice:
               item.maxPrice && item.maxPrice > (item.price || 0)
                 ? item.maxPrice
                 : undefined,
             images: item.thumbnail ? [item.thumbnail.url] : [],
-            colors: item.colors || [],
-            material: item.material,
+            colors: [],
+            material: item.material || undefined,
             isOutOfStock: !item.inStock,
             variantId: item.variantId || undefined,
           })
