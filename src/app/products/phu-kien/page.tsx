@@ -19,7 +19,7 @@ export default function PhuKienPage() {
         setLoading(true);
 
         const params: any = {
-          categorySlug: "phu-kien",
+          category: "phu-kien",
         };
 
         // Apply filters based on active category
@@ -80,35 +80,35 @@ export default function PhuKienPage() {
       id: "view-all",
       name: "Tất cả",
       slug: "view-all-phu-kien",
-      image: "/images/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=300&fit=crop",
       isActive: activeFilter === "view-all",
     },
     {
       id: "hop-kinh",
       name: "Hộp kính",
       slug: "hop-kinh",
-      image: "/images/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1509695507497-903c140c43b0?w=400&h=300&fit=crop",
       isActive: activeFilter === "hop-kinh",
     },
     {
       id: "khan-lau",
       name: "Khăn lau",
       slug: "khan-lau",
-      image: "/images/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1556656793-08538906a9f8?w=400&h=300&fit=crop",
       isActive: activeFilter === "khan-lau",
     },
     {
       id: "day-deo",
       name: "Dây đeo",
       slug: "day-deo",
-      image: "/images/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=400&h=300&fit=crop",
       isActive: activeFilter === "day-deo",
     },
     {
       id: "dung-dich",
       name: "Dung dịch vệ sinh",
       slug: "dung-dich",
-      image: "/images/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400&h=300&fit=crop",
       isActive: activeFilter === "dung-dich",
     },
   ];

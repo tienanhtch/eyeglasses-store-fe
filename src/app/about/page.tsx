@@ -13,32 +13,54 @@ export default function AboutPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-6">
             Về QuangVu Store
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
             Chúng tôi cam kết mang đến những sản phẩm kính mắt chất lượng cao
             với thiết kế hiện đại, phù hợp với mọi phong cách và nhu cầu của
             khách hàng.
           </p>
+          {/* Hero Image */}
+          <div className="max-w-5xl mx-auto rounded-lg overflow-hidden shadow-lg">
+            <img
+              src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=1200&h=600&fit=crop"
+              alt="QuangVu Store - Kính mắt cao cấp"
+              className="w-full h-auto"
+            />
+          </div>
         </div>
 
         {/* Mission & Vision */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Sứ mệnh</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-gray-600 leading-relaxed mb-6">
               QuangVu Store được thành lập với sứ mệnh mang đến những sản phẩm
               kính mắt cao cấp, giúp khách hàng thể hiện phong cách cá nhân và
               bảo vệ đôi mắt một cách tối ưu. Chúng tôi tin rằng mỗi người đều
               xứng đáng có được những sản phẩm chất lượng tốt nhất.
             </p>
+            <div className="rounded-lg overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&h=400&fit=crop"
+                alt="Sứ mệnh QuangVu Store"
+                className="w-full h-auto"
+              />
+            </div>
           </div>
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Tầm nhìn</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-gray-600 leading-relaxed mb-6">
               Trở thành thương hiệu kính mắt hàng đầu tại Việt Nam, được khách
               hàng tin tưởng và yêu mến. Chúng tôi hướng tới việc mở rộng thị
               trường và mang sản phẩm chất lượng cao đến với nhiều khách hàng
               hơn nữa.
             </p>
+            <div className="rounded-lg overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&h=400&fit=crop"
+                alt="Tầm nhìn QuangVu Store"
+                className="w-full h-auto"
+              />
+            </div>
           </div>
         </div>
 
@@ -103,23 +125,32 @@ export default function AboutPage() {
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
             Câu chuyện của chúng tôi
           </h2>
-          <div className="max-w-4xl mx-auto">
-            <p className="text-gray-600 leading-relaxed mb-6">
-              QuangVu Store được thành lập từ niềm đam mê với thời trang và sự
-              quan tâm đến sức khỏe đôi mắt. Chúng tôi hiểu rằng kính mắt không
-              chỉ là một phụ kiện mà còn là một phần quan trọng trong cuộc sống
-              hàng ngày.
-            </p>
-            <p className="text-gray-600 leading-relaxed mb-6">
-              Với đội ngũ chuyên nghiệp và kinh nghiệm nhiều năm trong ngành,
-              chúng tôi đã và đang mang đến những sản phẩm kính mắt chất lượng
-              cao, phù hợp với mọi lứa tuổi và phong cách.
-            </p>
-            <p className="text-gray-600 leading-relaxed">
-              Từ những ngày đầu thành lập, chúng tôi đã cam kết mang đến trải
-              nghiệm mua sắm tốt nhất cho khách hàng, với dịch vụ tư vấn chuyên
-              nghiệp và chế độ bảo hành uy tín.
-            </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                QuangVu Store được thành lập từ niềm đam mê với thời trang và sự
+                quan tâm đến sức khỏe đôi mắt. Chúng tôi hiểu rằng kính mắt không
+                chỉ là một phụ kiện mà còn là một phần quan trọng trong cuộc sống
+                hàng ngày.
+              </p>
+              <p className="text-gray-600 leading-relaxed mb-6">
+                Với đội ngũ chuyên nghiệp và kinh nghiệm nhiều năm trong ngành,
+                chúng tôi đã và đang mang đến những sản phẩm kính mắt chất lượng
+                cao, phù hợp với mọi lứa tuổi và phong cách.
+              </p>
+              <p className="text-gray-600 leading-relaxed">
+                Từ những ngày đầu thành lập, chúng tôi đã cam kết mang đến trải
+                nghiệm mua sắm tốt nhất cho khách hàng, với dịch vụ tư vấn chuyên
+                nghiệp và chế độ bảo hành uy tín.
+              </p>
+            </div>
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <img
+                src="https://images.unsplash.com/photo-1577803645773-f96470509666?w=600&h=500&fit=crop"
+                alt="Câu chuyện QuangVu Store"
+                className="w-full h-auto"
+              />
+            </div>
           </div>
         </div>
 

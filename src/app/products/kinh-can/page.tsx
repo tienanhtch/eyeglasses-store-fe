@@ -21,7 +21,7 @@ function KinhCanContent() {
 
   // Additional filter states
   const [priceRange, setPriceRange] = useState<string[]>([]);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedShapes, setSelectedShapes] = useState<string[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -42,10 +42,20 @@ function KinhCanContent() {
             params.isBestSeller = true;
             break;
           case "metal":
-            // Search for products with material containing "Metal"
             params.material = "Metal";
             break;
-          // Size filters would need backend support for size ranges
+          case "oval":
+            params.frameShape = "Oval";
+            break;
+          case "rectangle":
+            params.frameShape = "Rectangle";
+            break;
+          case "round":
+            params.frameShape = "Round";
+            break;
+          case "cat-eye":
+            params.frameShape = "Cat Eye";
+            break;
           default:
             // view-all: no additional filters
             break;
@@ -65,6 +75,12 @@ function KinhCanContent() {
           const maxPrice = Math.max(...prices.map((p) => p.max));
           params.minPrice = minPrice;
           params.maxPrice = maxPrice;
+        }
+
+        // Apply frameShape filters from sidebar
+        if (selectedShapes.length > 0) {
+          // Use first selected shape (API doesn't support multiple frameShapes in one call)
+          params.frameShape = selectedShapes[0];
         }
 
         const resp = await searchPublicProducts(params);
@@ -105,7 +121,7 @@ function KinhCanContent() {
       }
     };
     load();
-  }, [activeFilter, priceRange, selectedSizes]);
+  }, [activeFilter, priceRange, selectedShapes]);
 
   // Category filter data
   const categories = [
@@ -113,50 +129,57 @@ function KinhCanContent() {
       id: "view-all",
       name: "Tất cả",
       slug: "view-all-kinh-can",
-      image: "/images/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=300&fit=crop",
       isActive: activeFilter === "view-all",
     },
     {
       id: "new-collection",
       name: "Bộ sưu tập mới",
       slug: "new-collection",
-      image: "/images/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=300&fit=crop",
       isActive: activeFilter === "new-collection",
     },
     {
       id: "best-seller",
       name: "Bán chạy",
       slug: "best-seller-kinh-can",
-      image: "/images/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=300&fit=crop",
       isActive: activeFilter === "best-seller",
     },
     {
       id: "metal",
       name: "Kim loại",
       slug: "metal",
-      image: "/images/placeholder.svg",
+      image: "https://images.unsplash.com/photo-1577803645773-f96470509666?w=400&h=300&fit=crop",
       isActive: activeFilter === "metal",
     },
     {
-      id: "big-size",
-      name: "Cỡ lớn",
-      slug: "big-size",
-      image: "/images/placeholder.svg",
-      isActive: activeFilter === "big-size",
+      id: "oval",
+      name: "Oval",
+      slug: "oval",
+      image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=300&fit=crop",
+      isActive: activeFilter === "oval",
     },
     {
-      id: "medium-size",
-      name: "Cỡ trung bình",
-      slug: "medium-size",
-      image: "/images/placeholder.svg",
-      isActive: activeFilter === "medium-size",
+      id: "rectangle",
+      name: "Rectangle",
+      slug: "rectangle",
+      image: "https://images.unsplash.com/photo-1483412468200-72182dbbc544?w=400&h=300&fit=crop",
+      isActive: activeFilter === "rectangle",
     },
     {
-      id: "small-size",
-      name: "Cỡ nhỏ",
-      slug: "small-size",
-      image: "/images/placeholder.svg",
-      isActive: activeFilter === "small-size",
+      id: "round",
+      name: "Round",
+      slug: "round",
+      image: "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=400&h=300&fit=crop",
+      isActive: activeFilter === "round",
+    },
+    {
+      id: "cat-eye",
+      name: "Cat Eye",
+      slug: "cat-eye",
+      image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=400&h=300&fit=crop",
+      isActive: activeFilter === "cat-eye",
     },
   ];
 
@@ -176,21 +199,21 @@ function KinhCanContent() {
     );
   };
 
-  const handleSizeToggle = (size: string) => {
-    setSelectedSizes((prev) =>
-      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+  const handleShapeToggle = (shape: string) => {
+    setSelectedShapes((prev) =>
+      prev.includes(shape) ? prev.filter((s) => s !== shape) : [...prev, shape]
     );
   };
 
   const handleApplyFilters = () => {
-    console.log("Applying filters:", { priceRange, selectedSizes });
+    console.log("Applying filters:", { priceRange, selectedShapes });
     // Trigger reload with filters
     setActiveFilter("view-all"); // This will trigger useEffect
   };
 
   const handleClearFilters = () => {
     setPriceRange([]);
-    setSelectedSizes([]);
+    setSelectedShapes([]);
     console.log("Filters cleared");
   };
 
@@ -266,34 +289,43 @@ function KinhCanContent() {
               </div>
 
               <div>
-                <h3 className="font-medium text-gray-900 mb-3">Kích thước</h3>
+                <h3 className="font-medium text-gray-900 mb-3">Hình dạng gọng</h3>
                 <div className="space-y-2">
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       className="mr-2"
-                      checked={selectedSizes.includes("big")}
-                      onChange={() => handleSizeToggle("big")}
+                      checked={selectedShapes.includes("Oval")}
+                      onChange={() => handleShapeToggle("Oval")}
                     />
-                    <span className="text-sm text-gray-700">Cỡ lớn</span>
+                    <span className="text-sm text-gray-700">Oval</span>
                   </label>
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       className="mr-2"
-                      checked={selectedSizes.includes("medium")}
-                      onChange={() => handleSizeToggle("medium")}
+                      checked={selectedShapes.includes("Rectangle")}
+                      onChange={() => handleShapeToggle("Rectangle")}
                     />
-                    <span className="text-sm text-gray-700">Cỡ trung bình</span>
+                    <span className="text-sm text-gray-700">Rectangle</span>
                   </label>
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       className="mr-2"
-                      checked={selectedSizes.includes("small")}
-                      onChange={() => handleSizeToggle("small")}
+                      checked={selectedShapes.includes("Round")}
+                      onChange={() => handleShapeToggle("Round")}
                     />
-                    <span className="text-sm text-gray-700">Cỡ nhỏ</span>
+                    <span className="text-sm text-gray-700">Round</span>
+                  </label>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="mr-2"
+                      checked={selectedShapes.includes("Cat Eye")}
+                      onChange={() => handleShapeToggle("Cat Eye")}
+                    />
+                    <span className="text-sm text-gray-700">Cat Eye</span>
                   </label>
                 </div>
               </div>

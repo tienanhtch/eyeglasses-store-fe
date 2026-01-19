@@ -7,17 +7,22 @@ import Footer from "@/components/layout/Footer";
 import { getCurrentUserId } from "@/utils/auth-storage";
 import {
   createUserAddress,
+  deleteUserAddress,
   getUserAddresses,
   type CreateAddressPayload,
   type UserAddress,
 } from "@/services/customer/users";
-import { MapPin, Plus } from "lucide-react";
+import { MapPin, Plus, Trash2 } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function AddressesPage() {
   const router = useRouter();
+  const toast = useToast();
   const [userId, setUserId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
 
   const [form, setForm] = useState<CreateAddressPayload>({
@@ -49,7 +54,7 @@ export default function AddressesPage() {
       setAddresses(data);
     } catch (e) {
       console.error(e);
-      alert("Không thể tải địa chỉ");
+      toast.showError("Không thể tải địa chỉ");
     } finally {
       setLoading(false);
     }
@@ -80,12 +85,29 @@ export default function AddressesPage() {
         isDefault: false,
       });
       await load(userId);
-      alert("Đã thêm địa chỉ");
+      toast.showSuccess("Đã thêm địa chỉ thành công!");
     } catch (e: any) {
       console.error(e);
-      alert(e?.response?.data?.error || "Không thể thêm địa chỉ");
+      toast.showError(e?.response?.data?.error || "Không thể thêm địa chỉ");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async (addressId: string) => {
+    if (!userId) return;
+
+    try {
+      setDeleting(addressId);
+      await deleteUserAddress(userId, addressId);
+      await load(userId);
+      toast.showSuccess("Đã xóa địa chỉ thành công!");
+      setConfirmDelete(null);
+    } catch (e: any) {
+      console.error(e);
+      toast.showError(e?.response?.data?.error || "Không thể xóa địa chỉ");
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -159,6 +181,14 @@ export default function AddressesPage() {
                         {a.postalCode ? ` • ${a.postalCode}` : ""}
                       </p>
                     </div>
+                    <button
+                      onClick={() => setConfirmDelete(a.id)}
+                      disabled={deleting === a.id}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
+                      title="Xóa địa chỉ"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -290,6 +320,36 @@ export default function AddressesPage() {
             </button>
           </form>
         </section>
+
+        {/* Delete Confirmation Modal */}
+        {confirmDelete && (
+          <div className="fixed inset-0 bg-black/25 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Xác nhận xóa địa chỉ
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Bạn có chắc chắn muốn xóa địa chỉ này? Hành động này không thể hoàn tác.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setConfirmDelete(null)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                  disabled={deleting === confirmDelete}
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={() => handleDelete(confirmDelete)}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+                  disabled={deleting === confirmDelete}
+                >
+                  {deleting === confirmDelete ? "Đang xóa..." : "Xóa"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       <Footer />

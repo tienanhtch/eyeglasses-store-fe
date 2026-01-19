@@ -1,40 +1,31 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { MapPin, Phone, Clock, Mail } from "lucide-react";
+import { getStores, Store } from "@/services/stores";
 
 export default function StoresPage() {
-  const stores = [
-    {
-      id: 1,
-      name: "QuangVu Store - Quận 1",
-      address: "123 Đường Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh",
-      phone: "028 1234 5678",
-      email: "store1@quangvu.vn",
-      hours: "9:00 - 21:00",
-      image: "/images/placeholder.svg",
-      features: ["Đo khúc xạ", "Bảo hành", "Tư vấn chuyên nghiệp"],
-    },
-    {
-      id: 2,
-      name: "QuangVu Store - Quận 3",
-      address: "456 Đường Võ Văn Tần, Quận 3, TP. Hồ Chí Minh",
-      phone: "028 2345 6789",
-      email: "store2@quangvu.vn",
-      hours: "9:00 - 21:00",
-      image: "/images/placeholder.svg",
-      features: ["Làm mới gọng kính", "Giao hàng nhanh", "Tư vấn phong cách"],
-    },
-    {
-      id: 3,
-      name: "QuangVu Store - Quận 7",
-      address: "789 Đường Nguyễn Thị Thập, Quận 7, TP. Hồ Chí Minh",
-      phone: "028 3456 7890",
-      email: "store3@quangvu.vn",
-      hours: "9:00 - 21:00",
-      image: "/images/placeholder.svg",
-      features: ["Kính cao cấp", "Dịch vụ VIP", "Bảo hành mở rộng"],
-    },
-  ];
+  const [stores, setStores] = useState<Store[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadStores = async () => {
+      try {
+        setLoading(true);
+        const data = await getStores();
+        setStores(data);
+      } catch (err) {
+        console.error("Failed to load stores:", err);
+        setError("Không thể tải danh sách cửa hàng. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStores();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -53,26 +44,31 @@ export default function StoresPage() {
         </div>
 
         {/* Store List */}
-        <div className="space-y-8 mb-16">
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-gray-900 border-r-transparent"></div>
+              <p className="mt-4 text-gray-600">Đang tải danh sách cửa hàng...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <p className="text-red-600">{error}</p>
+          </div>
+        ) : stores.length === 0 ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+            <p className="text-gray-600">Chưa có cửa hàng nào.</p>
+          </div>
+        ) : (
+          <div className="space-y-8 mb-16">
           {stores.map((store) => (
             <div
               key={store.id}
               className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
-                {/* Store Image */}
-                <div className="lg:col-span-1">
-                  <div className="aspect-video relative overflow-hidden rounded-lg">
-                    <img
-                      src={store.image}
-                      alt={store.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-
+              <div className="grid grid-cols-1 gap-6 p-6">
                 {/* Store Info */}
-                <div className="lg:col-span-2">
+                <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">
                     {store.name}
                   </h2>
@@ -88,69 +84,71 @@ export default function StoresPage() {
                       </div>
 
                       <div className="flex items-start">
-                        <Phone className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            Điện thoại
+                          <Phone className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              Điện thoại
+                            </p>
+                            <p className="text-gray-600">{store.phone}</p>
+                          </div>
+                      </div>
+
+                        <div className="flex items-start">
+                          <Mail className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                          <div>
+                            <p className="font-medium text-gray-900">Mã cửa hàng</p>
+                            <p className="text-gray-600">{store.code}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start">
+                          <Clock className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              Giờ mở cửa
+                            </p>
+                            <p className="text-gray-600">{store.openHours}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="font-medium text-gray-900 mb-3">
+                          Thông tin
+                        </h3>
+                        <div className="space-y-2">
+                          <p className="text-gray-600">
+                            <span className="font-medium">Tên:</span> {store.name}
                           </p>
-                          <p className="text-gray-600">{store.phone}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start">
-                        <Mail className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
-                        <div>
-                          <p className="font-medium text-gray-900">Email</p>
-                          <p className="text-gray-600">{store.email}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start">
-                        <Clock className="h-5 w-5 text-gray-400 mr-3 mt-0.5" />
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            Giờ mở cửa
+                          <p className="text-gray-600">
+                            <span className="font-medium">Địa chỉ:</span> {store.address}
                           </p>
-                          <p className="text-gray-600">{store.hours}</p>
                         </div>
                       </div>
-                    </div>
-
-                    <div>
-                      <h3 className="font-medium text-gray-900 mb-3">
-                        Dịch vụ
-                      </h3>
-                      <ul className="space-y-2">
-                        {store.features.map((feature, index) => (
-                          <li
-                            key={index}
-                            className="flex items-center text-gray-600"
-                          >
-                            <div className="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
                     </div>
                   </div>
-                </div>
               </div>
             </div>
           ))}
         </div>
+        )}
 
         {/* Map Section */}
         <div className="bg-gray-50 rounded-lg p-8 mb-16">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
             Bản đồ cửa hàng
           </h2>
-          <div className="bg-gray-200 rounded-lg h-96 flex items-center justify-center">
-            <div className="text-center">
-              <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">
-                Bản đồ tương tác sẽ được tích hợp tại đây
-              </p>
-            </div>
+          <div className="relative w-full rounded-lg overflow-hidden" style={{ height: '600px' }}>
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3723.8168145559966!2d105.73938337584154!3d21.04001448739077!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135096b31fa7abb%3A0xff645782804911af!2zVHLGsOG7nW5nIMSR4bqhaSBo4buNYyBDw7RuZyBuZ2jhu4cgxJDDtG5nIMOB!5e0!3m2!1svi!2s!4v1768792247953!5m2!1svi!2s"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Bản đồ cửa hàng"
+            />
           </div>
         </div>
 

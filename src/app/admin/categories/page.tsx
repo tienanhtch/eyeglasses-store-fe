@@ -11,11 +11,14 @@ import {
   CategoryUpdatePayload,
 } from "@/services/admin/categories";
 import { Plus, Edit, Trash2, X } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function AdminCategoriesPage() {
+  const toast = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({
     slug: "",
@@ -32,7 +35,7 @@ export default function AdminCategoriesPage() {
       setCategories(data);
     } catch (error) {
       console.error("Error loading categories:", error);
-      alert("Không thể tải danh sách danh mục");
+      toast.showError("Không thể tải danh sách danh mục");
     } finally {
       setLoading(false);
     }
@@ -54,7 +57,7 @@ export default function AdminCategoriesPage() {
           sortOrder: formData.sortOrder,
         };
         await updateCategory(editingCategory.id, payload);
-        alert("Cập nhật danh mục thành công!");
+        toast.showSuccess("Cập nhật danh mục thành công!");
       } else {
         // Create
         const payload: CategoryCreatePayload = {
@@ -64,7 +67,7 @@ export default function AdminCategoriesPage() {
           sortOrder: formData.sortOrder,
         };
         await createCategory(payload);
-        alert("Tạo danh mục thành công!");
+        toast.showSuccess("Tạo danh mục thành công!");
       }
       setShowModal(false);
       setEditingCategory(null);
@@ -72,21 +75,20 @@ export default function AdminCategoriesPage() {
       loadCategories();
     } catch (error: any) {
       console.error("Error saving category:", error);
-      alert(error?.response?.data?.error || "Có lỗi xảy ra khi lưu danh mục");
+      toast.showError(error?.response?.data?.error || "Có lỗi xảy ra khi lưu danh mục");
     }
   };
 
   // Handle delete
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa danh mục này?")) return;
-
     try {
       await deleteCategory(id);
-      alert("Xóa danh mục thành công!");
+      toast.showSuccess("Xóa danh mục thành công!");
+      setConfirmDelete(null);
       loadCategories();
     } catch (error: any) {
       console.error("Error deleting category:", error);
-      alert(error?.response?.data?.error || "Có lỗi xảy ra khi xóa danh mục");
+      toast.showError(error?.response?.data?.error || "Có lỗi xảy ra khi xóa danh mục");
     }
   };
 
@@ -186,12 +188,12 @@ export default function AdminCategoriesPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        category.isActive
+                        category.active
                           ? "bg-green-100 text-green-800"
                           : "bg-gray-100 text-gray-800"
                       }`}
                     >
-                      {category.isActive ? "Hoạt động" : "Không hoạt động"}
+                      {category.active ? "Hoạt động" : "Không hoạt động"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
@@ -202,7 +204,7 @@ export default function AdminCategoriesPage() {
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(category.id)}
+                      onClick={() => setConfirmDelete(category.id)}
                       className="text-red-600 hover:text-red-800 inline-flex items-center"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -313,6 +315,34 @@ export default function AdminCategoriesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/25 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Xác nhận xóa danh mục
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Bạn có chắc chắn muốn xóa danh mục này? Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDelete)}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Xóa
+              </button>
+            </div>
           </div>
         </div>
       )}

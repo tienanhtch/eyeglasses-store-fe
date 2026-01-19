@@ -5,23 +5,72 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CollectionCategories from "@/components/product/CollectionCategories";
 import ProductGrid from "@/components/product/ProductGrid";
-import { getPublicProducts } from "@/services/catalog";
-import { mapPublicProductToUiProduct } from "@/utils/catalog-mappers";
+import { searchPublicProducts, SearchItem } from "@/services/catalog";
 import type { Product } from "@/types";
 
 export default function KinhRamPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("view-all");
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
-        const resp = await getPublicProducts();
-        const filtered = resp.products.filter((p) =>
-          p.categories?.some((c) => c.slug === "kinh-ram")
+
+        // Build search params based on active filter
+        const params: any = {
+          category: "kinh-ram",
+          size: 50,
+        };
+
+        switch (activeFilter) {
+          case "aviator":
+            params.frameShape = "Aviator";
+            break;
+          case "wayfarer":
+            params.frameShape = "Wayfarer";
+            break;
+          case "round":
+            params.frameShape = "Round";
+            break;
+          case "cat-eye":
+            params.frameShape = "Cat Eye";
+            break;
+          case "oval":
+            params.frameShape = "Oval";
+            break;
+          default:
+            // view-all: no additional filters
+            break;
+        }
+
+        const resp = await searchPublicProducts(params);
+
+        // Map SearchItem to Product type
+        const mappedProducts: Product[] = resp.items.map(
+          (item: SearchItem) => ({
+            id: item.id,
+            slug: item.slug,
+            name: item.name,
+            price: item.price || 0,
+            originalPrice:
+              item.maxPrice && item.maxPrice > (item.price || 0)
+                ? item.maxPrice
+                : undefined,
+            images: item.thumbnail ? [item.thumbnail.url] : [],
+            colors: [],
+            category: "kinh-ram",
+            description: "",
+            isNew: item.isNew || false,
+            isBestSeller: item.isBestSeller || false,
+            isOutOfStock: !item.inStock,
+            material: item.material || undefined,
+            variantId: item.variantId || undefined,
+          })
         );
-        setProducts(filtered.map(mapPublicProductToUiProduct));
+
+        setProducts(mappedProducts);
       } catch (e) {
         console.error(e);
       } finally {
@@ -29,60 +78,57 @@ export default function KinhRamPage() {
       }
     };
     load();
-  }, []);
+  }, [activeFilter]);
 
   // Category filter data for sunglasses
   const categories = [
     {
       id: "view-all",
-      name: "View All",
+      name: "Tất cả",
       slug: "view-all-kinh-ram",
-      image: "/images/placeholder.svg",
-      isActive: true,
+      image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&h=300&fit=crop",
+      isActive: activeFilter === "view-all",
     },
     {
-      id: "classic",
-      name: "Classic",
-      slug: "classic",
-      image: "/images/placeholder.svg",
-      isActive: false,
+      id: "aviator",
+      name: "Aviator",
+      slug: "aviator",
+      image: "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=400&h=300&fit=crop",
+      isActive: activeFilter === "aviator",
     },
     {
-      id: "sport",
-      name: "Sport",
-      slug: "sport",
-      image: "/images/placeholder.svg",
-      isActive: false,
+      id: "wayfarer",
+      name: "Wayfarer",
+      slug: "wayfarer",
+      image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=300&fit=crop",
+      isActive: activeFilter === "wayfarer",
     },
     {
-      id: "luxury",
-      name: "Luxury",
-      slug: "luxury",
-      image: "/images/placeholder.svg",
-      isActive: false,
+      id: "round",
+      name: "Round",
+      slug: "round",
+      image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=400&h=300&fit=crop",
+      isActive: activeFilter === "round",
     },
     {
-      id: "polarized",
-      name: "Polarized",
-      slug: "polarized",
-      image: "/images/placeholder.svg",
-      isActive: false,
+      id: "cat-eye",
+      name: "Cat Eye",
+      slug: "cat-eye",
+      image: "https://images.unsplash.com/photo-1577803645773-f96470509666?w=400&h=300&fit=crop",
+      isActive: activeFilter === "cat-eye",
     },
     {
-      id: "big-size",
-      name: "Big Size",
-      slug: "big-size",
-      image: "/images/placeholder.svg",
-      isActive: false,
-    },
-    {
-      id: "medium-size",
-      name: "Medium Size",
-      slug: "medium-size",
-      image: "/images/placeholder.svg",
-      isActive: false,
+      id: "oval",
+      name: "Oval",
+      slug: "oval",
+      image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=300&fit=crop",
+      isActive: activeFilter === "oval",
     },
   ];
+
+  const handleCategoryClick = (categoryId: string) => {
+    setActiveFilter(categoryId);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -93,6 +139,7 @@ export default function KinhRamPage() {
         <CollectionCategories
           categories={categories}
           basePath="/products/kinh-ram"
+          onCategoryClick={handleCategoryClick}
         />
 
         {/* Hero Section */}

@@ -107,6 +107,10 @@ export default function CheckoutPage() {
       if (paymentMethod === "COD") {
         // COD - no payment gateway, just show success
         showSuccess("Đặt hàng thành công! Bạn sẽ thanh toán khi nhận hàng.");
+        // Reload page to clear cart context
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       } else {
         // VNPAY or MOMO - redirect to payment gateway
         try {

@@ -38,4 +38,7 @@ export const createUserAddress = (userId: string, payload: CreateAddressPayload)
   return api.post<UserAddress>(`/users/addresses?userId=${userId}`, payload);
 };
 
+export const deleteUserAddress = (userId: string, addressId: string) => {
+  return api.delete(`/users/addresses/${addressId}?userId=${userId}`);
+};
 

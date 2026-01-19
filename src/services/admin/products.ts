@@ -29,7 +29,7 @@ export type Product = {
   frameShape?: string;
   seoTitle?: string;
   seoDescription?: string;
-  isPublished: boolean;
+  published: boolean;
   createdAt: string;
   updatedAt?: string;
   categories?: Array<{ id: string; name: string }>;

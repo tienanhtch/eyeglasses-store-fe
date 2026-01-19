@@ -50,11 +50,12 @@ export default function TheOfficePage() {
               </div>
             </div>
           </div>
-          <div className="bg-gray-100 rounded-lg h-96 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gray-300 rounded-lg mx-auto mb-4"></div>
-              <p className="text-gray-600">Hình ảnh văn phòng</p>
-            </div>
+          <div className="rounded-lg overflow-hidden shadow-lg">
+            <img
+              src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&h=600&fit=crop"
+              alt="The Office - QuangVu Store"
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
 

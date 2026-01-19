@@ -241,12 +241,12 @@ export default function AdminProductsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        product.isPublished
+                        product.published
                           ? "bg-green-100 text-green-800"
                           : "bg-gray-100 text-gray-800"
                       }`}
                     >
-                      {product.isPublished ? "Đã xuất bản" : "Nháp"}
+                      {product.published ? "Đã xuất bản" : "Nháp"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
