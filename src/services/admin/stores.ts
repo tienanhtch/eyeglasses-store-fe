@@ -9,7 +9,7 @@ export type Store = {
   lng?: number;
   phone: string;
   openHours: string;
-  isActive: boolean;
+  active: boolean; // Renamed from isActive
 };
 
 export type StoreCreatePayload = {

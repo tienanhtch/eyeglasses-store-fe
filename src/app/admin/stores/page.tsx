@@ -182,12 +182,12 @@ export default function AdminStoresPage() {
                 </div>
                 <span
                   className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    store.isActive
+                    store.active
                       ? "bg-green-100 text-green-800"
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  {store.isActive ? "Hoạt động" : "Đã đóng"}
+                  {store.active ? "Hoạt động" : "Đã đóng"}
                 </span>
               </div>
 

@@ -111,6 +111,30 @@ export default function AdminCategoriesPage() {
     setShowModal(true);
   };
 
+  // Generate slug from category name
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .normalize("NFD") // Decompose Vietnamese characters
+      .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D")
+      .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+      .trim()
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/-+/g, "-"); // Replace multiple hyphens with single hyphen
+  };
+
+  // Handle name change and auto-generate slug for new categories
+  const handleNameChange = (name: string) => {
+    if (!editingCategory) {
+      // Auto-generate slug only when creating new category
+      setFormData({ ...formData, name, slug: generateSlug(name) });
+    } else {
+      setFormData({ ...formData, name });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -259,9 +283,7 @@ export default function AdminCategoriesPage() {
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => handleNameChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                   placeholder="Kính cận"
                 />

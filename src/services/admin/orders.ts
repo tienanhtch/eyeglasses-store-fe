@@ -13,7 +13,7 @@ export type OrderItem = {
 
 export type Order = {
   id: string;
-  orderNumber: string;
+  orderNo: string; // Changed from orderNumber
   status: string;
   fulfillment: "DELIVERY" | "PICKUP";
   subtotal: number;
@@ -23,13 +23,14 @@ export type Order = {
   grandTotal: number;
   createdAt: string;
   updatedAt?: string;
-  customer?: {
+  userId: string; // Changed from customer object
+  customer?: { // Optional, might be filled later or separate API
     id: string;
     name: string;
     email: string;
     phone: string;
   };
-  items?: OrderItem[];
+  items?: any[]; // Simplified for now
 };
 
 export type OrderListResponse = {

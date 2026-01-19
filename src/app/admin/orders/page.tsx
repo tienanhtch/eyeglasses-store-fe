@@ -230,7 +230,7 @@ export default function AdminOrdersPage() {
               orders.map((order) => (
                 <tr key={order.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {order.orderNumber}
+                    {order.orderNo}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {order.customer?.name || "N/A"}
@@ -319,7 +319,7 @@ export default function AdminOrdersPage() {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
-                  Chi tiết đơn hàng #{selectedOrder.orderNumber}
+                  Chi tiết đơn hàng #{selectedOrder.orderNo}
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
                   Đặt ngày: {formatDate(selectedOrder.createdAt)}
@@ -365,7 +365,10 @@ export default function AdminOrdersPage() {
                     >
                       <div>
                         <p className="text-sm font-medium text-gray-900">
-                          {item.variant.sku} - {item.variant.color}
+                          {item.nameSnapshot}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {item.skuSnapshot}
                         </p>
                         <p className="text-sm text-gray-600">
                           Số lượng: {item.qty}
