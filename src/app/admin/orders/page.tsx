@@ -10,12 +10,16 @@ import {
   Order,
 } from "@/services/admin/orders";
 import { Eye, Package, Truck, ChevronLeft, ChevronRight } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function AdminOrdersPage() {
+  const toast = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [shipOrderId, setShipOrderId] = useState<string | null>(null);
+  const [trackingNumber, setTrackingNumber] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("");
 
   // Pagination
@@ -38,7 +42,7 @@ export default function AdminOrdersPage() {
       setTotalElements(data.totalElements);
     } catch (error) {
       console.error("Error loading orders:", error);
-      alert("Không thể tải danh sách đơn hàng");
+      toast.showError("Không thể tải danh sách đơn hàng");
     } finally {
       setLoading(false);
     }
@@ -56,7 +60,7 @@ export default function AdminOrdersPage() {
       setShowDetailModal(true);
     } catch (error) {
       console.error("Error loading order detail:", error);
-      alert("Không thể tải chi tiết đơn hàng");
+      toast.showError("Không thể tải chi tiết đơn hàng");
     }
   };
 
@@ -64,14 +68,14 @@ export default function AdminOrdersPage() {
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     try {
       await updateOrderStatus(orderId, { status: newStatus });
-      alert("Cập nhật trạng thái thành công!");
+      toast.showSuccess("Cập nhật trạng thái thành công!");
       loadOrders(currentPage, filterStatus || undefined);
       if (selectedOrder && selectedOrder.id === orderId) {
         viewOrderDetail(orderId);
       }
     } catch (error: any) {
       console.error("Error updating status:", error);
-      alert(error?.response?.data?.error || "Có lỗi xảy ra");
+      toast.showError(error?.response?.data?.error || "Có lỗi xảy ra");
     }
   };
 
@@ -79,32 +83,33 @@ export default function AdminOrdersPage() {
   const handleProcessOrder = async (orderId: string) => {
     try {
       await processOrder(orderId);
-      alert("Đã bắt đầu xử lý đơn hàng!");
+      toast.showSuccess("Đã bắt đầu xử lý đơn hàng!");
       loadOrders(currentPage, filterStatus || undefined);
     } catch (error: any) {
       console.error("Error processing order:", error);
-      alert(error?.response?.data?.error || "Có lỗi xảy ra");
+      toast.showError(error?.response?.data?.error || "Có lỗi xảy ra");
     }
   };
 
   // Ship order
-  const handleShipOrder = async (orderId: string) => {
-    const trackingNumber = prompt("Nhập mã vận đơn:");
-    if (!trackingNumber) return;
+  const handleShipOrder = async () => {
+    if (!shipOrderId || !trackingNumber) return;
 
     try {
-      await shipOrder(orderId, {
+      await shipOrder(shipOrderId, {
         trackingNumber,
         shippingMethod: "EXPRESS",
         estimatedDelivery: new Date(
           Date.now() + 3 * 24 * 60 * 60 * 1000
         ).toISOString(),
       });
-      alert("Đã giao hàng thành công!");
+      toast.showSuccess("Đã giao hàng thành công!");
+      setShipOrderId(null);
+      setTrackingNumber("");
       loadOrders(currentPage, filterStatus || undefined);
     } catch (error: any) {
       console.error("Error shipping order:", error);
-      alert(error?.response?.data?.error || "Có lỗi xảy ra");
+      toast.showError(error?.response?.data?.error || "Có lỗi xảy ra");
     }
   };
 
@@ -258,7 +263,7 @@ export default function AdminOrdersPage() {
                     )}
                     {order.status === "PROCESSING" && (
                       <button
-                        onClick={() => handleShipOrder(order.id)}
+                        onClick={() => setShipOrderId(order.id)}
                         className="text-purple-600 hover:text-purple-800 inline-flex items-center"
                         title="Giao hàng"
                       >
@@ -458,6 +463,42 @@ export default function AdminOrdersPage() {
                     )}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shipping Tracking Number Modal */}
+      {shipOrderId && (
+        <div className="fixed inset-0 bg-black/25 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Giao hàng
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Nhập mã vận đơn để giao hàng:
+            </p>
+            <input
+              type="text"
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 mb-6"
+              placeholder="Nhập mã vận đơn"
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { setShipOrderId(null); setTrackingNumber(""); }}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleShipOrder}
+                disabled={!trackingNumber}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50"
+              >
+                Xác nhận
+              </button>
             </div>
           </div>
         </div>

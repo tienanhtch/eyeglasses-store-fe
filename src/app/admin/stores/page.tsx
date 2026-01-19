@@ -10,11 +10,14 @@ import {
   StoreCreatePayload,
 } from "@/services/admin/stores";
 import { Plus, Edit, Trash2, X, MapPin, Phone, Clock } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function AdminStoresPage() {
+  const toast = useToast();
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [editingStore, setEditingStore] = useState<Store | null>(null);
   const [formData, setFormData] = useState({
     code: "",
@@ -34,7 +37,7 @@ export default function AdminStoresPage() {
       setStores(data);
     } catch (error) {
       console.error("Error loading stores:", error);
-      alert("Không thể tải danh sách cửa hàng");
+      toast.showError("Không thể tải danh sách cửa hàng");
     } finally {
       setLoading(false);
     }
@@ -59,7 +62,7 @@ export default function AdminStoresPage() {
           lng: formData.lng || undefined,
         };
         await updateStore(editingStore.id, payload);
-        alert("Cập nhật cửa hàng thành công!");
+        toast.showSuccess("Cập nhật cửa hàng thành công!");
       } else {
         // Create
         const payload: StoreCreatePayload = {
@@ -72,7 +75,7 @@ export default function AdminStoresPage() {
           lng: formData.lng || undefined,
         };
         await createStore(payload);
-        alert("Tạo cửa hàng thành công!");
+        toast.showSuccess("Tạo cửa hàng thành công!");
       }
       setShowModal(false);
       setEditingStore(null);
@@ -80,21 +83,20 @@ export default function AdminStoresPage() {
       loadStores();
     } catch (error: any) {
       console.error("Error saving store:", error);
-      alert(error?.response?.data?.error || "Có lỗi xảy ra khi lưu cửa hàng");
+      toast.showError(error?.response?.data?.error || "Có lỗi xảy ra khi lưu cửa hàng");
     }
   };
 
   // Handle delete
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa cửa hàng này?")) return;
-
     try {
       await deleteStore(id);
-      alert("Xóa cửa hàng thành công!");
+      toast.showSuccess("Xóa cửa hàng thành công!");
+      setConfirmDelete(null);
       loadStores();
     } catch (error: any) {
       console.error("Error deleting store:", error);
-      alert(error?.response?.data?.error || "Có lỗi xảy ra khi xóa cửa hàng");
+      toast.showError(error?.response?.data?.error || "Có lỗi xảy ra khi xóa cửa hàng");
     }
   };
 
@@ -215,7 +217,7 @@ export default function AdminStoresPage() {
                   Chỉnh sửa
                 </button>
                 <button
-                  onClick={() => handleDelete(store.id)}
+                  onClick={() => setConfirmDelete(store.id)}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -385,6 +387,34 @@ export default function AdminStoresPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/25 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Xác nhận xóa cửa hàng
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Bạn có chắc chắn muốn xóa cửa hàng này? Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDelete)}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Xóa
+              </button>
+            </div>
           </div>
         </div>
       )}

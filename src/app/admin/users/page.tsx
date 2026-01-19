@@ -19,11 +19,16 @@ import {
   ChevronRight,
   X,
 } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function AdminUsersPage() {
+  const toast = useToast();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [confirmLock, setConfirmLock] = useState<{userId: string; currentActive: boolean} | null>(null);
+  const [resetPasswordUser, setResetPasswordUser] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
   const [filterRole, setFilterRole] = useState<string>("");
 
   // Pagination (mock for now - API seems to return array directly)
@@ -52,7 +57,7 @@ export default function AdminUsersPage() {
       setUsers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error loading users:", error);
-      alert("Không thể tải danh sách người dùng");
+      toast.showError("Không thể tải danh sách người dùng");
     } finally {
       setLoading(false);
     }
@@ -67,13 +72,13 @@ export default function AdminUsersPage() {
     e.preventDefault();
     try {
       await createAdminUser(formData);
-      alert("Tạo người dùng thành công!");
+      toast.showSuccess("Tạo người dùng thành công!");
       setShowModal(false);
       resetForm();
       loadUsers(currentPage, filterRole || undefined);
     } catch (error: any) {
       console.error("Error creating user:", error);
-      alert(
+      toast.showError(
         error?.response?.data?.message || "Có lỗi xảy ra khi tạo người dùng"
       );
     }
@@ -82,33 +87,33 @@ export default function AdminUsersPage() {
   // Handle lock/unlock user
   const handleToggleLock = async (userId: string, currentActive: boolean) => {
     const action = currentActive ? "khóa" : "mở khóa";
-    if (!confirm(`Bạn có chắc chắn muốn ${action} tài khoản này?`)) return;
-
     try {
       await lockAdminUser(userId, !currentActive);
-      alert(
+      toast.showSuccess(
         `${
           action.charAt(0).toUpperCase() + action.slice(1)
         } tài khoản thành công!`
       );
+      setConfirmLock(null);
       loadUsers(currentPage, filterRole || undefined);
     } catch (error: any) {
       console.error("Error toggling lock:", error);
-      alert(error?.response?.data?.message || "Có lỗi xảy ra");
+      toast.showError(error?.response?.data?.message || "Có lỗi xảy ra");
     }
   };
 
   // Handle reset password
-  const handleResetPassword = async (userId: string) => {
-    const newPassword = prompt("Nhập mật khẩu mới:");
-    if (!newPassword) return;
+  const handleResetPassword = async () => {
+    if (!resetPasswordUser || !newPassword) return;
 
     try {
-      await resetPassword(userId, newPassword);
-      alert("Reset mật khẩu thành công!");
+      await resetPassword(resetPasswordUser, newPassword);
+      toast.showSuccess("Reset mật khẩu thành công!");
+      setResetPasswordUser(null);
+      setNewPassword("");
     } catch (error: any) {
       console.error("Error resetting password:", error);
-      alert(error?.response?.data?.message || "Có lỗi xảy ra");
+      toast.showError(error?.response?.data?.message || "Có lỗi xảy ra");
     }
   };
 
@@ -264,7 +269,7 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                     <button
-                      onClick={() => handleToggleLock(user.id, user.isActive)}
+                      onClick={() => setConfirmLock({userId: user.id, currentActive: user.isActive})}
                       className={`inline-flex items-center ${
                         user.isActive
                           ? "text-orange-600 hover:text-orange-800"
@@ -281,7 +286,7 @@ export default function AdminUsersPage() {
                       )}
                     </button>
                     <button
-                      onClick={() => handleResetPassword(user.id)}
+                      onClick={() => setResetPasswordUser(user.id)}
                       className="text-purple-600 hover:text-purple-800 inline-flex items-center"
                       title="Reset mật khẩu"
                     >
@@ -417,6 +422,70 @@ export default function AdminUsersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Lock/Unlock Confirmation Modal */}
+      {confirmLock && (
+        <div className="fixed inset-0 bg-black/25 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Xác nhận {confirmLock.currentActive ? "khóa" : "mở khóa"} tài khoản
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Bạn có chắc chắn muốn {confirmLock.currentActive ? "khóa" : "mở khóa"} tài khoản này?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmLock(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => handleToggleLock(confirmLock.userId, confirmLock.currentActive)}
+                className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Modal */}
+      {resetPasswordUser && (
+        <div className="fixed inset-0 bg-black/25 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Reset mật khẩu
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Nhập mật khẩu mới cho người dùng:
+            </p>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 mb-6"
+              placeholder="Nhập mật khẩu mới"
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { setResetPasswordUser(null); setNewPassword(""); }}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleResetPassword}
+                disabled={!newPassword}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50"
+              >
+                Reset
+              </button>
+            </div>
           </div>
         </div>
       )}

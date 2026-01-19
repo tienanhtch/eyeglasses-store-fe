@@ -11,12 +11,15 @@ import {
 } from "@/services/admin/products";
 import { getAllCategories, Category } from "@/services/admin/categories";
 import { Plus, Edit, Trash2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function AdminProductsPage() {
+  const toast = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // Pagination
@@ -53,7 +56,7 @@ export default function AdminProductsPage() {
       setTotalElements(data.totalElements);
     } catch (error) {
       console.error("Error loading products:", error);
-      alert("Không thể tải danh sách sản phẩm");
+      toast.showError("Không thể tải danh sách sản phẩm");
     } finally {
       setLoading(false);
     }
@@ -81,7 +84,7 @@ export default function AdminProductsPage() {
       if (editingProduct) {
         // Update
         await updateProduct(editingProduct.id, formData);
-        alert("Cập nhật sản phẩm thành công!");
+        toast.showSuccess("Cập nhật sản phẩm thành công!");
       } else {
         // Create
         const payload: ProductCreatePayload = {
@@ -90,7 +93,7 @@ export default function AdminProductsPage() {
             formData.categoryIds.length > 0 ? formData.categoryIds : undefined,
         };
         await createProduct(payload);
-        alert("Tạo sản phẩm thành công!");
+        toast.showSuccess("Tạo sản phẩm thành công!");
       }
       setShowModal(false);
       setEditingProduct(null);
@@ -98,21 +101,20 @@ export default function AdminProductsPage() {
       loadProducts(currentPage);
     } catch (error: any) {
       console.error("Error saving product:", error);
-      alert(error?.response?.data?.error || "Có lỗi xảy ra khi lưu sản phẩm");
+      toast.showError(error?.response?.data?.error || "Có lỗi xảy ra khi lưu sản phẩm");
     }
   };
 
   // Handle delete
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
-
     try {
       await deleteProduct(id);
-      alert("Xóa sản phẩm thành công!");
+      toast.showSuccess("Xóa sản phẩm thành công!");
+      setConfirmDelete(null);
       loadProducts(currentPage);
     } catch (error: any) {
       console.error("Error deleting product:", error);
-      alert(error?.response?.data?.error || "Có lỗi xảy ra khi xóa sản phẩm");
+      toast.showError(error?.response?.data?.error || "Có lỗi xảy ra khi xóa sản phẩm");
     }
   };
 
@@ -257,7 +259,7 @@ export default function AdminProductsPage() {
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(product.id)}
+                      onClick={() => setConfirmDelete(product.id)}
                       className="text-red-600 hover:text-red-800 inline-flex items-center"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -505,6 +507,34 @@ export default function AdminProductsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/25 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Xác nhận xóa sản phẩm
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDelete)}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Xóa
+              </button>
+            </div>
           </div>
         </div>
       )}
