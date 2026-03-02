@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ShoppingCart,
   Package,
@@ -11,129 +11,157 @@ import {
   DollarSign,
   Calendar,
 } from "lucide-react";
+import { 
+  getDashboardStats, 
+  getRecentOrders, 
+  DashboardStats 
+} from "@/services/admin/dashboard";
+import { getOrders, Order } from "@/services/admin/orders";
+import { formatCurrency } from "@/utils/format";
+import { format, subDays } from "date-fns";
+import { vi } from "date-fns/locale";
+import { useRouter } from "next/navigation";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
-const stats = [
-  {
-    name: "Tổng đơn hàng",
-    value: "1,234",
-    change: "+12%",
-    changeType: "positive",
-    icon: ShoppingCart,
-  },
-  {
-    name: "Sản phẩm",
-    value: "456",
-    change: "+8%",
-    changeType: "positive",
-    icon: Package,
-  },
-  {
-    name: "Khách hàng",
-    value: "2,890",
-    change: "+15%",
-    changeType: "positive",
-    icon: Users,
-  },
-  {
-    name: "Doanh thu",
-    value: "₫125.4M",
-    change: "+23%",
-    changeType: "positive",
-    icon: DollarSign,
-  },
-];
-
-const recentOrders = [
-  {
-    id: "#ORD-001",
-    customer: "Nguyễn Văn A",
-    product: "Kính cận Ray-Ban",
-    amount: "₫2,500,000",
-    status: "Đang xử lý",
-    date: "2024-01-15",
-  },
-  {
-    id: "#ORD-002",
-    customer: "Trần Thị B",
-    product: "Kính râm Gucci",
-    amount: "₫3,200,000",
-    status: "Đã giao",
-    date: "2024-01-14",
-  },
-  {
-    id: "#ORD-003",
-    customer: "Lê Văn C",
-    product: "Gói tròng cao cấp",
-    amount: "₫1,800,000",
-    status: "Chờ xác nhận",
-    date: "2024-01-13",
-  },
-  {
-    id: "#ORD-004",
-    customer: "Phạm Thị D",
-    product: "Kính cận + Tròng",
-    amount: "₫4,500,000",
-    status: "Đang giao",
-    date: "2024-01-12",
-  },
-];
-
-const upcomingAppointments = [
-  {
-    id: "APT-001",
-    customer: "Nguyễn Văn E",
-    store: "Cửa hàng Quận 1",
-    time: "14:00 - 15:00",
-    date: "2024-01-16",
-    type: "Đo khúc xạ",
-  },
-  {
-    id: "APT-002",
-    customer: "Trần Thị F",
-    store: "Cửa hàng Quận 3",
-    time: "10:00 - 11:00",
-    date: "2024-01-16",
-    type: "Tư vấn kính",
-  },
-  {
-    id: "APT-003",
-    customer: "Lê Văn G",
-    store: "Cửa hàng Quận 7",
-    time: "16:00 - 17:00",
-    date: "2024-01-17",
-    type: "Đo khúc xạ",
-  },
-];
-
-const topProducts = [
-  {
-    name: "Kính cận Ray-Ban RB3025",
-    sales: 45,
-    revenue: "₫112.5M",
-    growth: "+12%",
-  },
-  {
-    name: "Kính râm Gucci GG0061S",
-    sales: 32,
-    revenue: "₫89.6M",
-    growth: "+8%",
-  },
-  {
-    name: "Gói tròng Essilor Varilux",
-    sales: 28,
-    revenue: "₫67.2M",
-    growth: "+15%",
-  },
-  {
-    name: "Kính cận Oakley OO9208",
-    sales: 24,
-    revenue: "₫48.0M",
-    growth: "+5%",
-  },
-];
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [timeRange, setTimeRange] = useState("7days");
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [statusData, setStatusData] = useState<any[]>([]);
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Helper to safely fetch orders without breaking Promise.all
+        const safeGetOrders = async (params: any) => {
+          try {
+             return await getOrders(params);
+          } catch (e) {
+             console.error("Error fetching orders:", params, e);
+             return { totalElements: 0, content: [] };
+          }
+        };
+
+        const safeGetStats = async () => {
+            try {
+                return await getDashboardStats();
+            } catch (e) {
+                console.error("Error fetching stats:", e);
+                return { totalOrders: 0, revenue: 0, totalCustomers: 0, totalProducts: 0 };
+            }
+        };
+
+        const [statsData, ordersData, pending, shipped, delivered, completed, cancelled, recentList] = await Promise.all([
+          safeGetStats(),
+          safeGetOrders({ size: 5 }),
+          safeGetOrders({ size: 1, status: 'PENDING' }),
+          safeGetOrders({ size: 1, status: 'SHIPPED' }),
+          safeGetOrders({ size: 1, status: 'DELIVERED' }),
+          safeGetOrders({ size: 1, status: 'COMPLETED' }),
+          safeGetOrders({ size: 1, status: 'CANCELLED' }),
+          safeGetOrders({ size: 100 })
+        ]);
+        
+        setStats(statsData);
+        // ordersData.content might be undefined if safeGetOrders returns default struct with empty content, but our helper ensures it returns {content: []}
+        // However getOrders returns OrderListResponse which has content.
+        // Let's ensure types.
+        setRecentOrders(ordersData?.content || []);
+
+        // Process Status Data
+        setStatusData([
+          { name: 'Chờ xử lý', value: pending?.totalElements || 0, color: '#EAB308' },
+          { name: 'Đang giao', value: shipped?.totalElements || 0, color: '#3B82F6' },
+          { name: 'Đã giao', value: delivered?.totalElements || 0, color: '#10B981' }, // Added Delivered
+          { name: 'Hoàn thành', value: completed?.totalElements || 0, color: '#22C55E' },
+          { name: 'Đã hủy', value: cancelled?.totalElements || 0, color: '#EF4444' },
+        ]);
+
+        // Process Revenue Data (Last 7 days)
+        const revenueMap = new Map<string, number>();
+        for (let i = 6; i >= 0; i--) {
+            const d = subDays(new Date(), i);
+            const dateStr = format(d, 'dd/MM');
+            revenueMap.set(dateStr, 0);
+        }
+
+        if (recentList?.content) {
+            recentList.content.forEach((order: any) => {
+                if (order.status !== 'CANCELLED') {
+                    const dateStr = format(new Date(order.createdAt), 'dd/MM');
+                    if (revenueMap.has(dateStr)) {
+                        revenueMap.set(dateStr, (revenueMap.get(dateStr) || 0) + order.grandTotal);
+                    }
+                }
+            });
+        }
+        setRevenueData(Array.from(revenueMap.entries()).map(([name, value]) => ({ name, value })));
+
+      } catch (error) {
+        console.error("Critical failure loading dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const statsList = [
+    {
+      name: "Tổng đơn hàng",
+      value: stats?.totalOrders.toString() || "0",
+      change: "0%",
+      changeType: "neutral",
+      icon: ShoppingCart,
+    },
+    {
+      name: "Sản phẩm",
+      value: stats?.totalProducts.toString() || "0",
+      change: "0%",
+      changeType: "neutral",
+      icon: Package,
+    },
+    {
+      name: "Khách hàng",
+      value: stats?.totalCustomers.toString() || "0",
+      change: "0%",
+      changeType: "neutral",
+      icon: Users,
+    },
+    {
+      name: "Doanh thu",
+      value: formatCurrency(stats?.revenue || 0),
+      change: "0%",
+      changeType: "neutral",
+      icon: DollarSign,
+    },
+  ];
+
+  if (loading) {
+      return (
+          <div className="flex items-center justify-center min-h-[400px]">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+      );
+  }
 
   return (
     <div className="space-y-6">
@@ -159,7 +187,7 @@ export default function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => {
+        {statsList.map((stat) => {
           const Icon = stat.icon;
           return (
             <div
@@ -179,165 +207,124 @@ export default function AdminDashboard() {
                   </p>
                 </div>
               </div>
-              <div className="mt-4">
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    stat.changeType === "positive"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {stat.change}
-                </span>
-                <span className="ml-2 text-sm text-gray-500">
-                  so với tháng trước
-                </span>
-              </div>
             </div>
           );
         })}
       </div>
 
-      {/* Charts and Tables */}
+      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Orders */}
+        {/* Status Distribution - Pie Chart */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">
-              Đơn hàng gần đây
-            </h3>
-            <button className="text-sm text-blue-600 hover:text-blue-800">
-              Xem tất cả
-            </button>
-          </div>
-          <div className="space-y-4">
-            {recentOrders.map((order) => (
-              <div
-                key={order.id}
-                className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm font-medium text-gray-900">
-                      {order.id}
-                    </span>
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        order.status === "Đã giao"
-                          ? "bg-green-100 text-green-800"
-                          : order.status === "Đang xử lý"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : order.status === "Đang giao"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {order.status}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600">{order.customer}</p>
-                  <p className="text-sm text-gray-500">{order.product}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">
-                    {order.amount}
-                  </p>
-                  <p className="text-xs text-gray-500">{order.date}</p>
-                </div>
-              </div>
-            ))}
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Trạng thái đơn hàng</h3>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={statusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {statusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Upcoming Appointments */}
+        {/* Revenue Trend - Line Chart */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">
-              Lịch hẹn sắp tới
-            </h3>
-            <button className="text-sm text-blue-600 hover:text-blue-800">
-              Xem tất cả
-            </button>
-          </div>
-          <div className="space-y-4">
-            {upcomingAppointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Doanh thu 7 ngày qua</h3>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={revenueData}
+                margin={{
+                  top: 5,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
               >
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm font-medium text-gray-900">
-                      {appointment.id}
-                    </span>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {appointment.type}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    {appointment.customer}
-                  </p>
-                  <p className="text-sm text-gray-500">{appointment.store}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">
-                    {appointment.time}
-                  </p>
-                  <p className="text-xs text-gray-500">{appointment.date}</p>
-                </div>
-              </div>
-            ))}
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis tickFormatter={(value: number) => `${value / 1000}k`} />
+                <Tooltip formatter={(value: number | undefined) => formatCurrency(value ?? 0)} />
+                <Legend />
+                <Line type="monotone" dataKey="value" name="Doanh thu" stroke="#8884d8" activeDot={{ r: 8 }} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Top Products */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900">
-            Sản phẩm bán chạy
-          </h3>
-          <button className="text-sm text-blue-600 hover:text-blue-800">
-            Xem tất cả
-          </button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Sản phẩm
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Số lượng bán
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Doanh thu
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tăng trưởng
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {topProducts.map((product, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {product.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {product.sales}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {product.revenue}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="text-green-600">{product.growth}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Orders */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-gray-900">
+              Đơn hàng gần đây
+            </h3>
+            <button 
+              onClick={() => router.push('/admin/orders')}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Xem tất cả
+            </button>
+          </div>
+          <div className="space-y-4">
+             {recentOrders.length === 0 ? (
+                <p className="text-center text-gray-500 py-4">Chưa có đơn hàng nào</p>
+            ) : (
+                recentOrders.map((order) => (
+                <div
+                    key={order.id}
+                    className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                >
+                    <div className="flex-1">
+                    <div className="flex items-center space-x-3">
+                        <span className="text-sm font-medium text-gray-900">
+                        {order.orderNo}
+                        </span>
+                        <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            order.status === "COMPLETED"
+                            ? "bg-green-100 text-green-800"
+                            : order.status === "PENDING"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : order.status === "SHIPPED"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                        >
+                        {order.status}
+                        </span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                        {order.customer?.name || "Khách lẻ"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                         {format(new Date(order.createdAt), "dd/MM/yyyy HH:mm", { locale: vi })}
+                    </p>
+                    </div>
+                    <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900">
+                        {formatCurrency(order.grandTotal)}
+                    </p>
+                    </div>
+                </div>
+                ))
+            )}
+          </div>
         </div>
       </div>
     </div>
