@@ -20,6 +20,7 @@ export type PublicProductVariant = {
   retailPrice: number;
   salePrice?: number | null;
   active: boolean;
+  totalAvailable?: number; // Tổng tồn kho khả dụng
 };
 
 export type PublicProductImage = {

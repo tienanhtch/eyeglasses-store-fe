@@ -65,13 +65,21 @@ export type ProductResponse = {
 
 export type ImageUploadResponse = {
   success: boolean;
-  message: string;
-  data: {
-    id: string;
-    url: string;
-    alt: string;
-    sortOrder: number;
-  };
+  url: string;
+  filename: string;
+};
+
+export type AddImagePayload = {
+  url: string;
+  alt?: string;
+  sortOrder?: number;
+};
+
+export type AddImageResponse = {
+  id: string;
+  url: string;
+  alt: string;
+  sortOrder: number;
 };
 
 // Lấy danh sách sản phẩm với phân trang
@@ -108,12 +116,79 @@ export const deleteProduct = (id: string) => {
   return api.delete<{ success: boolean; message: string }>(`/admin/products/${id}`);
 };
 
-// Upload ảnh sản phẩm
-export const uploadProductImage = (formData: FormData) => {
+// Lấy chi tiết sản phẩm (bao gồm images và variants)
+export const getProductDetail = (id: string) => {
+  return api.get<Product>(`/admin/products/${id}`);
+};
+
+// Upload file ảnh lên server, trả về URL
+export const uploadProductImage = (file: File, folder = "products") => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("folder", folder);
   return api.post<ImageUploadResponse>("/admin/images/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+    headers: { "Content-Type": "multipart/form-data" },
   });
 };
+
+// Gắn ảnh vào sản phẩm (sau khi đã upload xong và có URL)
+export const addProductImage = (productId: string, payload: AddImagePayload) => {
+  return api.post<AddImageResponse>(`/admin/products/${productId}/images`, payload);
+};
+
+// Xóa ảnh khỏi sản phẩm
+export const deleteProductImage = (imageId: string) => {
+  return api.delete<{ status: string }>(`/admin/images/${imageId}`);
+};
+
+// ---- Variant Management ----
+
+export type VariantCreatePayload = {
+  sku: string;
+  color?: string;
+  sizeMm?: number;
+  bridgeMm?: number;
+  templeMm?: number;
+  retailPrice: number;
+  salePrice?: number;
+  isActive?: boolean;
+};
+
+// Thêm variant vào sản phẩm
+export const addVariant = (productId: string, payload: VariantCreatePayload) => {
+  return api.post<ProductVariant>(`/admin/products/${productId}/variants`, payload);
+};
+
+// Cập nhật variant
+export const updateVariant = (variantId: string, payload: Partial<VariantCreatePayload>) => {
+  return api.patch<ProductVariant>(`/admin/variants/${variantId}`, payload);
+};
+
+// Xóa variant
+export const deleteVariant = (variantId: string) => {
+  return api.delete<{ status: string }>(`/admin/variants/${variantId}`);
+};
+
+// ---- Inventory Management ----
+
+export type SetStockPayload = {
+  storeId: string;
+  variantId: string;
+  onHand: number;
+  reserved?: number;
+};
+
+export type InventoryRecord = {
+  id: string;
+  storeId: string;
+  variantId: string;
+  onHand: number;
+  reserved: number;
+};
+
+// Set số lượng tồn kho (upsert)
+export const setInventoryStock = (payload: SetStockPayload) => {
+  return api.post<InventoryRecord>("/admin/inventory/set", payload);
+};
+
 
